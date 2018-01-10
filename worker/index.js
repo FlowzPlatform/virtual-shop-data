@@ -18,7 +18,12 @@ let optionsES = {
   auth: 'elastic:J26n7GwOFk7vtqG7xiHQi8gX'
 }
 
-const esClient = new elasticsearch.Client(optionsES)
+let esUrl = 'https://elastic:J26n7GwOFk7vtqG7xiHQi8gX@f21a94c6770cd2850444cb6de9b333cf.us-east-1.aws.found.io:9243'
+
+let esClient = new elasticsearch.Client({
+  host: esUrl,
+  log: 'trace'
+})
 
 let queueOption = {
   name: 'importData'
@@ -29,11 +34,11 @@ const objQ = new rfqQueue(cxnOptions, queueOption)
 function getJobQueue () {
   objQ.process((job, next) => {
     // Get all suppliers approve data.
-    rethink.table('vshopdata')
-  	.filter(r.row("id").eq(job.data.vId))
+    rethink.table('vshopDetail')
+    .filter(r.row("id").eq(job.data.vId))
     .run().then(function(result) {
-    	doJob(job, result[0], next)
-		})
+      doJob(job, result[0], next)
+    })
   })
 }
 
@@ -44,36 +49,101 @@ async function doJob (objWorkJob,result,next) {
   }
   // check user created on ES
   let userData = await getUserRequestResponse(objWorkJob)
+  let getUserNextVersion1 = await getUserNewVersion(ESuserData[objWorkJob.data.vId])
+  let esUpdateArr = []
+  for(let i=0;i<result.suppliers.length;i++){
+    let supplyerName = result.suppliers[i].supplyerName
+    let sku = result.suppliers[i].products
+    let getEsSkuResponse = await getEsSku(supplyerName,sku)
 
+    for(let j=0;j<getEsSkuResponse.hits.hits.length;j++){
+      esUpdateArr.push({ 
+        "update": { 
+          "_index": "pdm1",
+          "_type": "product", 
+          "_id":getEsSkuResponse.hits.hits[j]._id
+        }
+      },
+      { 
+        "script": {
+          "inline": "ctx._source.vid.add(params.newVid)",
+          "params" : {
+            "newVid" : getUserNextVersion1
+          },
+          "lang" : "painless"
+        }
+      })
+    }
+  }
+
+  if(esUpdateArr.length > 0) {
+    let dumpEsResponse = await dumpToES(esUpdateArr)
+    let updateRdbResponse = await updateInRdb(objWorkJob,userData)
+    if(updateRdbResponse){
+      next(null,"sucessfull")
+    }
+    else{
+      next(null,"unsucessfull")
+    }
+  }
+
+}
+
+async function updateInRdb(objWorkJob,userData){
+  return rethink.table('vshopdata')
+    .filter(r.row("id").eq(objWorkJob.data.vId))
+    .update({
+      "esUser":  userData[objWorkJob.data.vId].username,
+      "password":  "123456",
+      "status":  "completed"
+    })
+    .run()
+}
+
+async function dumpToES (makeProductJsonObj) {
+  let bulkRowsString = makeProductJsonObj.map(function (row) {
+    return JSON.stringify(row)
+  }).join('\n') + '\n'
+  // bulkRowsString += '\n'
+  // console.log(makeProductJsonObj);
+  return new Promise(function (resolve) {
+    esClient.bulk({body: makeProductJsonObj}, function (err, resp) {
+      if (!err) {
+        resolve('Inserted')
+      }
+    })
+  })
+}
+
+function getUserNewVersion (ESUser) {
+  // console.log("===============",ESUser)
+  let versionNo = 1;
+  if (ESUser.metadata.user_version_history) {
+    versionNo = ESUser.metadata.user_version_history.length + 1
+  }
+  return 'dist'+ ESUser.username + '-' + versionNo
+}
+
+async function getEsSku(supplyerName,sku){
   let response = await esClient.search({
     index:  'pdm1',
     type:  'product',
     body: {
+      "_source":["_id"],
       "query": {
-        "must": {
-          "should": [
-            { "match": { "supplier_info.username":"sweda" }},
+        "bool": {
+          "must": [
+            { "match": { "supplier_info.username":supplyerName }},
             { "match": { "country": "US" }}
-          ]
+          ],
+          "should" : sku.map(function(obj) {
+             return { "match" : { "sku" : obj }}
+          })
         }
       }   
     }
   })
-
-  console.log(response)
-  
-  // for(let i=0;i<result.supplyers.length;i++){
-  // 	let supplyerName = result.supplyers[i].supplyerName
-  // 	let userData = await getESUser(supplyerName)
-  // 	userData = JSON.parse(userData)
-
-  // 	console.log(userData[supplyerName].metadata.sid)
-  // }
-
-  // await userDataPrepared(objWorkJob)
-
-  // objWorkJob.done()
-  // updateJobQueueStatus(objWorkJob)
+  return response
 }
 
 async function getUserRequestResponse (objWorkJob) {
@@ -114,13 +184,14 @@ async function makeNewUser (objWorkJob) {
   let vId = jobData.vId
 
   let userObject = {
-  	'username': vId,
+    'username': vId,
     'password': '123456',
     'roles': ['read_write'],
     'full_name': username,
     'email': emailId,
     'metadata': {
-      'company': ''
+      'company': '',
+      'sid': "dist"+vId+"-1"
     },
     'enabled': true
   }
