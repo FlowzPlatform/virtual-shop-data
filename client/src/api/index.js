@@ -2,7 +2,7 @@ import axios from 'axios'
 var VueCookie = require('vue-cookie')
 
 export default {
-  request (method, uri, data = null, headers= {'authorization': VueCookie.get('auth_token')}) {
+  request (method, uri, data = null, headers= {'Authorization': VueCookie.get('auth_token')}) {
     if (!method) {
       console.error('API function call requires method argument')
       return

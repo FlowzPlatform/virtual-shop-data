@@ -7,7 +7,7 @@
     <Card>
       <Row slot="title" :gutter="16">
         <Col :md="{ span: 10 }">
-          <p>Supplyers and Products</p>    
+          <p>Suppliers and Products</p>    
         </Col>
         <Col :md="{ span: 12 }">
           <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="80">
@@ -54,7 +54,7 @@
         },
         supplyer: [
           {
-            title: 'Supplyers',
+            title: 'Suppliers',
             key: 'key',
             render: (h, params) => {
               return h('div', [
@@ -131,7 +131,7 @@
         this.selectedSupplyer = data.key
         let obj = this.selectedData.filter(function (obj) { return obj.supplyerName === self.selectedSupplyer })
         if(obj.length<1){
-          this.selectedData.push({'supplyerName':this.selectedSupplyer,'products':[]})
+          this.selectedData.push({'supplyerName':this.selectedSupplyer,'products':[],'approve':true})
         }
 
          let body = {
@@ -166,7 +166,10 @@
          this.$refs[name].validate(async (valid) => {
           if (valid) {
             if(this.selectedData.length>0){
-              let finalData = {"name":this.formValidate.name,"supplyers":this.selectedData}
+              let finalData = {
+                "virtualShopName":this.formValidate.name,
+                "suppliers":this.selectedData
+              }
               let savedData = await vshopdata.add(finalData)
               if(savedData.status == 201){
                 this.$Message.success('Saved successfully!');
