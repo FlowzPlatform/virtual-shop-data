@@ -34,6 +34,7 @@ module.exports = merge(webpackBaseConfig, {
             template: './src/template/index.ejs',
             inject: false
         }),
+        new webpack.EnvironmentPlugin(['domainkey','apiURL']),
         new CopyWebpackPlugin([
         ], {
             ignore: [

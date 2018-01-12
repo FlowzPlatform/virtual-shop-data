@@ -1,18 +1,19 @@
 <template>
 	<div>
-		<Card>
+    previewList
+		<!-- <Card>
 			<Collapse>
         <Panel v-for="productData in productData">
             {{ productData.name }}
             <Table border slot="content" :columns="supplyerList" :data="productData.supplyers"></Table>
         </Panel>
     	</Collapse>
-		</Card>
+		</Card> -->
 	</div>
 </template>
 
 <script>
-	import vshopdata from '@/api/vshopdata'
+	import vshoplist from '@/api/vshoplist'
 
   export default {
     data () {
@@ -36,9 +37,9 @@
       }
     },
     async mounted(){
-    	let self = this
-      let productData = await vshopdata.getAll()
-      this.productData = productData.data.data
+    	// let self = this
+     //  let productData = await vshoplist.getAll()
+      // this.productData = productData.data.data
     }
   }
 </script>

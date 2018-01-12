@@ -13,9 +13,7 @@ export default {
       return
     }
 
-    // var url = process.env.apiURL + uri
-    
-    var url = 'http://localhost:3038' + uri
+    var url = process.env.apiURL + uri
     return axios({ method, url, data, headers })
     .then(response => {
       return response

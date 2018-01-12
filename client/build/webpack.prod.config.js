@@ -18,7 +18,7 @@ fs.open('./build/env.js', 'w', function(err, fd) {
 
 module.exports = merge(webpackBaseConfig, {
     output: {
-        publicPath: 'https://iview.github.io/iview-admin/dist/',  // 修改 https://iv...admin 这部分为你的服务器域名 
+        publicPath: '/dist/',  // 修改 https://iv...admin 这部分为你的服务器域名 
         filename: '[name].[hash].js',
         chunkFilename: '[name].[hash].chunk.js'
     },
@@ -41,20 +41,20 @@ module.exports = merge(webpackBaseConfig, {
                 NODE_ENV: '"production"'
             }
         }),
-        new webpack.optimize.UglifyJsPlugin({
-            compress: {
-                warnings: false
-            }
-        }),
-        // new UglifyJsParallelPlugin({
-        //     workers: os.cpus().length,
-        //     mangle: true,
-        //     compressor: {
-        //       warnings: false,
-        //       drop_console: true,
-        //       drop_debugger: true
-        //      }
+        // new webpack.optimize.UglifyJsPlugin({
+        //     compress: {
+        //         warnings: false
+        //     }
         // }),
+        new UglifyJsParallelPlugin({
+            workers: os.cpus().length,
+            mangle: true,
+            compressor: {
+              warnings: false,
+              drop_console: true,
+              drop_debugger: true
+             }
+        }),
         new CopyWebpackPlugin([
             {
                 from: 'td_icon.ico'
@@ -62,20 +62,15 @@ module.exports = merge(webpackBaseConfig, {
             {
                 from: 'src/styles/fonts',
                 to: 'fonts'
-            },
-            {
-                from: 'src/views/main-components/theme-switch/theme'
-            },
-            {
-                from: 'src/views/my-components/text-editor/tinymce'
             }
         ], {
             ignore: [
                 'text-editor.vue'
             ]
         }),
+        new webpack.EnvironmentPlugin(['domainkey', 'apiURL']),
         new HtmlWebpackPlugin({
-            title: 'iView admin v' + package.version,
+            title: 'Virtual Shopping',
             favicon: './td_icon.ico',
             filename: '../index.html',
             template: './src/template/index.ejs',
