@@ -34,8 +34,14 @@ module.exports = merge(webpackBaseConfig, {
             template: './src/template/index.ejs',
             inject: false
         }),
-        new webpack.EnvironmentPlugin(['domainkey','apiURL']),
+        new webpack.EnvironmentPlugin(['domainkey','apiURL','vId']),
         new CopyWebpackPlugin([
+            {
+                from: 'src/views/main-components/theme-switch/theme'
+            },
+            {
+                from: 'src/views/my-components/text-editor/tinymce'
+            }
         ], {
             ignore: [
                 'text-editor.vue'

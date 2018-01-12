@@ -41,7 +41,7 @@
   import vshopdata from '@/api/vshopdata'
 
   export default {
-  	name: 'home',
+    name: 'home',
     data () {
       return {
         formValidate: {

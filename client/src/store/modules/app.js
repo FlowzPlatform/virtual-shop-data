@@ -12,16 +12,16 @@ const app = {
         menuTheme: 'dark', // 主题
         themeColor: '',
         pageOpenedList: [{
-            title: 'home',
+            title: 'Home',
             path: '',
-            name: 'home_index'
+            name: 'Dashboard'
         }],
         currentPageName: '',
         currentPath: [
             {
-                title: 'home',
+                title: 'Home',
                 path: '',
-                name: 'home_index'
+                name: 'Dashboard'
             }
         ], // 面包屑数组
         menuList: [],
@@ -170,7 +170,7 @@ const app = {
             localStorage.avatorImgPath = path;
         },
         switchLang (state, lang) {
-            state.lang = 'en-US';
+            state.lang = lang;
             Vue.config.lang = lang;
         },
         clearOpenedSubmenu (state) {

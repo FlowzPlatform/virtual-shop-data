@@ -2,7 +2,7 @@ import axios from 'axios'
 var VueCookie = require('vue-cookie')
 
 export default {
-  request (method, uri, data = null, headers= {'Authorization': VueCookie.get('auth_token')}) {
+  request (method, uri, data = null, headers) {
     if (!method) {
       console.error('API function call requires method argument')
       return
@@ -13,8 +13,17 @@ export default {
       return
     }
 
+    let nHeaders = {}
+    if(headers != undefined){
+      nHeaders = Object.assign(headers, {'Authorization': VueCookie.get('auth_token')})
+    }
+    else{
+      nHeaders = {'Authorization': VueCookie.get('auth_token')}
+    }
+
     var url = process.env.apiURL + uri
-    return axios({ method, url, data, headers })
+
+    return axios({ method, url, data, 'headers':nHeaders })
     .then(response => {
       return response
     })

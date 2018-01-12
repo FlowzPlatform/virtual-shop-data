@@ -55,6 +55,7 @@ module.exports = merge(webpackBaseConfig, {
               drop_debugger: true
              }
         }),
+        new webpack.EnvironmentPlugin(['domainkey','apiURL','vId']),
         new CopyWebpackPlugin([
             {
                 from: 'td_icon.ico'
@@ -62,15 +63,20 @@ module.exports = merge(webpackBaseConfig, {
             {
                 from: 'src/styles/fonts',
                 to: 'fonts'
+            },
+            {
+                from: 'src/views/main-components/theme-switch/theme'
+            },
+            {
+                from: 'src/views/my-components/text-editor/tinymce'
             }
         ], {
             ignore: [
                 'text-editor.vue'
             ]
         }),
-        new webpack.EnvironmentPlugin(['domainkey', 'apiURL']),
         new HtmlWebpackPlugin({
-            title: 'Virtual Shopping',
+            title: 'iView admin v' + package.version,
             favicon: './td_icon.ico',
             filename: '../index.html',
             template: './src/template/index.ejs',
