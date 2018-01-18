@@ -1,4 +1,5 @@
 import axios from 'axios'
+import config from '../config/customConfig'
 var VueCookie = require('vue-cookie')
 
 export default {
@@ -21,7 +22,7 @@ export default {
       nHeaders = {'Authorization': VueCookie.get('auth_token')}
     }
 
-    var url = process.env.apiURL + uri
+    var url = config.default.feathersServiceBaseUrl + uri
 
     return axios({ method, url, data, 'headers':nHeaders })
     .then(response => {
