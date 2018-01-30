@@ -7,3 +7,4 @@ node_modules
 \.settings/
 build/env.js
 dist/
+client/package-lock.json
