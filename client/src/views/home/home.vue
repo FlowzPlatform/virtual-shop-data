@@ -27,7 +27,7 @@
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
           <Input v-model="productSearch" placeholder="Search Product..."></Input>
-          <Table border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-selection-change="getSelectedProduct"></Table>
+          <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-selection-change="getSelectedProduct"></Table>
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
           <Table border :columns="selectedProducts" :data="selectedData" :loading="selectedData.length<1"></Table>
@@ -39,6 +39,8 @@
 <script>
   import service from '@/api/service'
   import vshopdata from '@/api/vshopdata'
+  import vshopList from '@/api/vshoplist'
+  import _ from 'lodash'
 
   export default {
     name: 'home',
@@ -121,7 +123,9 @@
         supplyerList: [],
         productList: [],
         selectedData: [],
-        selectedSupplyer: ''
+        selectedSupplyer: '',
+        doc_count: 0,
+        cacheSupplier: []
       }
     },
     methods:{
@@ -142,8 +146,7 @@
             }
           }
         }
-
-        let productList = await service.productList(body)
+        let productList = await service.productList(body, this.doc_count)
         if(productList === 401){
           this.$router.push({ path: '/login' })
         }
@@ -203,7 +206,20 @@
       else{
         this.supplyerList = supplyerList.data.aggregations.group_by_username.buckets
         if(this.supplyerList.length>0){
+          for(let i = 0; i < this.supplyerList.length; i++) {
+            // let supplierName = _.find(this.cacheSupplier, this.supplyerList[i].key) 
+            // if(supplierName == undefined) {
+              let supplier = await vshopList.get(this.supplyerList[i].key)
+              let r = _.find(supplier.data, 'company')
+              this.cacheSupplier.push({[this.supplyerList[i].key]: r.company})
+              this.supplyerList[i].key = r.company
+            // } else {
+              // console.log('supplierName==>', supplierName)
+              // this.supplyerList[i].key = supplierName.key
+            // }
+          }
           this.suplayerLoading = false
+          this.doc_count = this.supplyerList[0].doc_count
         }
       }
     }
