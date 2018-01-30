@@ -25,7 +25,7 @@ else
   }
 fi
 
-SERVICE_ID=`curl -u ""$RANCHER_USER":"$RANCHER_PASS"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "http://rancher.flowz.com:8080/v2-beta/projects/$ENV_ID/services?name=crmadmin-frontend-flowz" | jq '.data[].id' | tr -d '"'`
+SERVICE_ID=`curl -u ""$RANCHER_USER":"$RANCHER_PASS"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "http://rancher.flowz.com:8080/v2-beta/projects/$ENV_ID/services?name=vshopdata-frontend-flowz" | jq '.data[].id' | tr -d '"'`
 echo $SERVICE_ID
 
 echo "waiting for service to upgrade "
@@ -47,7 +47,7 @@ echo "waiting for service to upgrade "
           "\"upgrading\"" )
               echo "still upgrading"
               echo -n "."
-              sleep 3
+              sleep 60
               continue ;;
           *)
               die "unexpected upgrade state" ;;

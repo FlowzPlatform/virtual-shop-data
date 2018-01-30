@@ -2,6 +2,7 @@
 FROM whiledo/letsencrypt-apache-ubuntu
 
 ARG domainkey
+ARG vId
 
 # install dependencies
 RUN apt-get update \
