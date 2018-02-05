@@ -1,14 +1,14 @@
 {
   "cxnOptions": {
-    "host": "47.254.27.134",
+    "host": "devrethink.flowzcluster.tk",
     "port": 28015,
     "db": "importDataJobqueue"
   },
   "connOptions": {
-    "host": "47.254.27.134",
+    "host": "devrethink.flowzcluster.tk",
     "port": 28015,
     "db": "feather_product"
   },
   "table": "vshopdata",
-  "pdmUrl": "http://172.16.61.197:3038"
+  "pdmUrl": "http://172.16.230.151:3038"
 }

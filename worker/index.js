@@ -12,13 +12,13 @@ var elasticsearch = require('elasticsearch')
 
 let optionsES = {
   tls: 'https://',
-  host: 'f21a94c6770cd2850444cb6de9b333cf.us-east-1.aws.found.io',
+  host: '349d6e5f56299a9f7b9ff68ccd099977.us-west-2.aws.found.io',
   path: '_xpack/security/user/',
   port: '9243',
-  auth: 'elastic:J26n7GwOFk7vtqG7xiHQi8gX'
+  auth: 'elastic:cRrL0LF9MkBpRIMKP9g3dTgV'
 }
 
-let esUrl = 'https://elastic:J26n7GwOFk7vtqG7xiHQi8gX@f21a94c6770cd2850444cb6de9b333cf.us-east-1.aws.found.io:9243'
+let esUrl = 'https://elastic:cRrL0LF9MkBpRIMKP9g3dTgV@349d6e5f56299a9f7b9ff68ccd099977.us-west-2.aws.found.io:9243'
 
 let esClient = new elasticsearch.Client({
   host: esUrl,

@@ -166,6 +166,8 @@
         })
       },
       async submitData(name){
+        this.$Message.success('Submit')
+        // let auth_token = this.$cookie.get('auth_token') , {"headers": auth_token}
          this.$refs[name].validate(async (valid) => {
           if (valid) {
             if(this.selectedData.length>0){

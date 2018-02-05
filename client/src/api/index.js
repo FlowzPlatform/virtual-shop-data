@@ -23,7 +23,6 @@ export default {
     }
 
     var url = config.default.feathersServiceBaseUrl + uri
-
     return axios({ method, url, data, 'headers':nHeaders })
     .then(response => {
       return response
