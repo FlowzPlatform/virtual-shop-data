@@ -3,8 +3,5 @@ let model = 'vshopdata'
 export default {
   add: (data) => {
   	return api.request('post', '/' + model, data)
-  },
-  getAll: () => {
-  	return api.request('get', '/' + model)
   }
 }

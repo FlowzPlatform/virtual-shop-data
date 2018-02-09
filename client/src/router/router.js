@@ -57,8 +57,8 @@ export const otherRouter = {
     redirect: '/home',
     component: Main,
     children: [
-        { path: 'home', title: 'Dashboard', name: 'Dashboard', component: resolve => { require(['@/views/home/home.vue'], resolve); } }
-        
+        { path: 'home', title: 'Dashboard', name: 'Dashboard', component: resolve => { require(['@/views/home/home.vue'], resolve); } },
+        { path: 'vshoplist', title: 'Virtual Shop List', name: 'vshoplist', component: resolve => { require(['@/views/home/vshoplist.vue'], resolve); } }
     ]
 };
 

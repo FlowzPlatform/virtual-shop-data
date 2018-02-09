@@ -17,13 +17,12 @@ export default {
     let nHeaders = {}
     if(headers != undefined){
       nHeaders = Object.assign(headers, {'Authorization': VueCookie.get('auth_token')})
-    }
-    else{
+    } else {
       nHeaders = {'Authorization': VueCookie.get('auth_token')}
     }
 
     var url = config.default.feathersServiceBaseUrl + uri
-
+    console.log('url', url)
     return axios({ method, url, data, 'headers':nHeaders })
     .then(response => {
       return response

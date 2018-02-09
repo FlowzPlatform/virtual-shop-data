@@ -5,6 +5,13 @@ export default {
   // 	return api.request('post', '/' + model, data)
   // },
   get: (rowId) => {
-  	return api.request('get', '/' + model + '/' + rowId)
+    if (rowId != undefined) {
+      return api.request('get', '/' + model + '/' + rowId)
+    } else {
+      return api.request('get', '/' + model + '?userId')  
+    }
+  },
+  getAll: () => {
+    return api.request('get', '/' + model + '?all=1')
   }
 }
