@@ -46,6 +46,7 @@
     name: 'home',
     data () {
       return {
+        modalDelete: false,
         formValidate: {
           name: ''
         },
@@ -96,7 +97,7 @@
         ],
         selectedProducts: [
           {
-            title: 'Total',
+            title: 'Suppliers',
             render: (h, params) => {
               return h('div', [
                 h('Icon', {
@@ -115,6 +116,25 @@
                 h('div', params.row.products.length)
               ]);
             }
+          },
+          {
+            title: 'Action',
+            render: (h, params) => {
+              return h('div', [
+                h('Button', {
+                  props: {
+                    type: 'text',
+                    size: 'large',
+                    icon: 'trash-a'
+                  },
+                  on: {
+                    click: () => {
+                      this.confirmDelete(params.index)
+                    }
+                  }
+                })
+              ])
+            }
           }
         ],
         suplayerLoading: true,
@@ -129,24 +149,33 @@
       }
     },
     methods:{
+      async confirmDelete(index) {
+        let self = this
+        this.$Modal.confirm({
+          title: 'Are you sure want to delete?',
+          content: 'Press OK to confirm delete.',
+          onOk: async function() {
+            self.selectedData.splice(index, 1)
+          }
+        })
+      },
       async getProducts(data){
         this.productLoading = true
         let self = this 
         this.selectedSupplyer = data.key
-        let obj = this.selectedData.filter(function (obj) { return obj.supplyerName === self.selectedSupplyer })
-        if(obj.length<1){
-          this.selectedData.push({'supplyerName':this.selectedSupplyer,'products':[],'approve':true})
-        }
+        // let obj = this.selectedData.filter(function (obj) { return obj.supplyerName === self.selectedSupplyer })
+        // if(obj.length<1){
+        //   this.selectedData.push({'supplyerName':this.selectedSupplyer,'products':[],'approve':true})
+        // }
 
          let body = {
-           "country":"US",
            "query": {
             "match": {
-              "supplier_info.username": this.selectedSupplyer
+              "supplier_id": this.selectedSupplyer
             }
           }
         }
-        let productList = await service.productList(body, this.doc_count)
+        let productList = await service.productList(body, data.doc_count)
         if(productList === 401){
           this.$router.push({ path: '/login' })
         }
@@ -159,6 +188,11 @@
       },
       getSelectedProduct(data){
         let self = this
+        // this.selectedSupplyer = data.key
+        let obj = this.selectedData.filter(function (obj) { return obj.supplyerName === self.selectedSupplyer })
+        if(obj.length<1){
+          this.selectedData.push({'supplyerName':this.selectedSupplyer,'products':[],'approve':true})
+        }
         this.selectedData.filter(function(el) {
           if(el.supplyerName == self.selectedSupplyer){
             el.products = data.map(a => a._source.sku)
@@ -166,10 +200,10 @@
         })
       },
       async submitData(name){
-        this.$Message.success('Submit')
         // let auth_token = this.$cookie.get('auth_token') , {"headers": auth_token}
          this.$refs[name].validate(async (valid) => {
           if (valid) {
+            this.$Message.success('Submit')
             if(this.selectedData.length>0){
               let finalData = {
                 "virtualShopName":this.formValidate.name,
@@ -179,7 +213,7 @@
               if(savedData.status == 201){
                 this.$Message.success('Saved successfully!');
                 this.$router.push({
-                  name: 'preview'
+                  name: 'vshoplist'
                 });
               }
             }
@@ -200,25 +234,30 @@
         })
       }
     },
-    async mounted(){
+    async mounted() {
       let supplyerList = await service.supplyerList()
-      if(supplyerList === 401){
+      if(supplyerList === 401) {
         this.$router.push({ path: '/login' })
-      }
-      else{
+      } else {
         this.supplyerList = supplyerList.data.aggregations.group_by_username.buckets
-        if(this.supplyerList.length>0){
+        if(this.supplyerList.length>0) {
           for(let i = 0; i < this.supplyerList.length; i++) {
-            // let supplierName = _.find(this.cacheSupplier, this.supplyerList[i].key) 
-            // if(supplierName == undefined) {
+            let supplierName = _.find(this.cacheSupplier, this.supplyerList[i].key) 
+            if(supplierName == undefined) {
               let supplier = await vshopList.get(this.supplyerList[i].key)
-              let r = _.find(supplier.data, 'company')
-              this.cacheSupplier.push({[this.supplyerList[i].key]: r.company})
-              this.supplyerList[i].key = r.company
-            // } else {
-              // console.log('supplierName==>', supplierName)
-              // this.supplyerList[i].key = supplierName.key
-            // }
+              let c = _.find(supplier.data, 'company')
+              let v = _.find(supplier.data, 'virtualShopName')
+              if (c != undefined) {
+                this.cacheSupplier.push({[this.supplyerList[i].key]: c.company})
+                this.supplyerList[i].key = c.company 
+              } else if (v != undefined) {
+                this.cacheSupplier.push({[this.supplyerList[i].key]: v.virtualShopName})
+                this.supplyerList[i].key = v.virtualShopName
+              } else {
+              }
+            } else {
+              this.supplyerList[i].key = supplierName.key
+            }
           }
           this.suplayerLoading = false
           this.doc_count = this.supplyerList[0].doc_count
