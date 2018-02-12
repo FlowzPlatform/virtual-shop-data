@@ -200,6 +200,7 @@
         })
       },
       async submitData(name){
+        let self = this
         // let auth_token = this.$cookie.get('auth_token') , {"headers": auth_token}
          this.$refs[name].validate(async (valid) => {
           if (valid) {
@@ -209,16 +210,19 @@
                 "virtualShopName":this.formValidate.name,
                 "suppliers":this.selectedData
               }
-              let savedData = await vshopdata.add(finalData)
-              if(savedData.status == 201){
-                this.$Message.success('Saved successfully!');
-                this.$router.push({
+              vshopdata.add(finalData)
+              .then(res => {
+                self.$Message.success('Saved successfully!')
+                self.$router.push({
                   name: 'vshoplist'
                 });
-              }
+              })
+              .catch(err => {
+                this.$Message.error('Error : ', err)    
+              }) 
             }
           } else {
-            this.$Message.error('Please fill required fields !');
+            this.$Message.error('Please fill required fields!')
           }
         })
       }
