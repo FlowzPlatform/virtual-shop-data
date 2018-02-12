@@ -181,10 +181,10 @@ export default {
             },
             rules: {
                 userName: [
-                    { required: true, message: '账号不能为空', trigger: 'blur' }
+                    { required: true, message: 'Enter Username', trigger: 'blur' }
                 ],
                 password: [
-                    { required: true, message: '密码不能为空', trigger: 'blur' }
+                    { required: true, message: 'Enter Password', trigger: 'blur' }
                 ]
             },
             errmsg: '',
@@ -354,19 +354,17 @@ export default {
                         password: self.login.password.trim()
                     })
                     .then(function(response) {
-                        console.log(response);
                         self.saveFileLoadingLogin = false;
                         axios({
-                            method: 'post',
+                            method: 'get',
                             url: config.default.userDetail,
                             headers: {'Authorization': response.data.logintoken}
                         })
                         .then(function(result) {
-                            console.log(result)
                             let location = psl.parse(window.location.hostname)
                             location = location.domain === null ? location.input : location.domain
-                             Cookies.set('user',  result.data.data.email  , {domain: location});
-                              Cookies.set('auth_token', response.data.logintoken , {domain: location});
+                            Cookies.set('user',  result.data.data.email  , {domain: location});
+                            Cookies.set('auth_token', response.data.logintoken , {domain: location});
                         
                             Cookies.set('email', response.data.email , {domain: location}) ;
                             Cookies.set('password', '123456');
