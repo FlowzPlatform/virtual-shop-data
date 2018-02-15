@@ -16,7 +16,7 @@ export default {
 
     let nHeaders = {}
     if(headers != undefined){
-      nHeaders = Object.assign(headers, {'Authorization': VueCookie.get('auth_token')})
+      nHeaders = Object.assign(headers, {'Authorization': VueCookie.get('auth_token'), 'vid': headers})
     } else {
       nHeaders = {'Authorization': VueCookie.get('auth_token')}
     }

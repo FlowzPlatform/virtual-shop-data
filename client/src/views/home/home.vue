@@ -30,7 +30,7 @@
           <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-selection-change="getSelectedProduct"></Table>
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
-          <Table border :columns="selectedProducts" :data="selectedData" :loading="selectedData.length<1"></Table>
+          <Table border :columns="selectedProducts" :data="selectedData"></Table>
         </Col>
       </Row>
     </Card>
@@ -66,7 +66,7 @@
                     type: 'person'
                   }
                 }),
-                h('strong', ' '+params.row.key)
+                h('strong', ' ' + params.row.key1)
               ]);
             }
           },
@@ -85,11 +85,6 @@
             title: 'Products',
             render: (h, params) => {
               return h('div', [
-                h('Icon', {
-                  props: {
-                    type: 'person'
-                  }
-                }),
                 h('strong', ' '+params.row._source.product_name)
               ]);
             }
@@ -105,7 +100,7 @@
                     type: 'person'
                   }
                 }),
-                h('strong', ' '+params.row.supplyerName)
+                h('strong', ' '+params.row.name)
               ]);
             }
           },
@@ -138,12 +133,13 @@
           }
         ],
         suplayerLoading: true,
-        productLoading: true,
+        productLoading: false,
         productSearch: '',
         supplyerList: [],
         productList: [],
         selectedData: [],
         selectedSupplyer: '',
+        selectedSupplyerName: '',
         doc_count: 0,
         cacheSupplier: []
       }
@@ -160,48 +156,35 @@
         })
       },
       async getProducts(data){
+        this.selectedSupplyer = data.id
+        this.selectedSupplyerName = data.key1
         this.productLoading = true
-        let self = this 
-        this.selectedSupplyer = data.key
-        // let obj = this.selectedData.filter(function (obj) { return obj.supplyerName === self.selectedSupplyer })
-        // if(obj.length<1){
-        //   this.selectedData.push({'supplyerName':this.selectedSupplyer,'products':[],'approve':true})
-        // }
-
-         let body = {
-           "query": {
-            "match": {
-              "supplier_id": this.selectedSupplyer
-            }
-          }
-        }
-        let productList = await service.productList(body, data.doc_count)
+        let productList = await service.productList(data.id, data.doc_count)
         if(productList === 401){
           this.$router.push({ path: '/login' })
-        }
-        else{
+        } else {
           this.productList = productList.data.hits.hits
-          if(this.productList.length>0){
+          if(this.productList.length > 0){
             this.productLoading = false
           }
         }
       },
       getSelectedProduct(data){
         let self = this
-        // this.selectedSupplyer = data.key
         let obj = this.selectedData.filter(function (obj) { return obj.supplyerName === self.selectedSupplyer })
         if(obj.length<1){
-          this.selectedData.push({'supplyerName':this.selectedSupplyer,'products':[],'approve':true})
+          this.selectedData.push({'supplyerName':this.selectedSupplyer,'products':[],'approve':true,'name':self.selectedSupplyerName})
         }
         this.selectedData.filter(function(el) {
           if(el.supplyerName == self.selectedSupplyer){
-            el.products = data.map(a => a._source.sku)
+            el.products = data.map(function(a) {
+              return {'sku': a._source.sku, 'id':a._id}
+            })
           }
         })
       },
       async submitData(name){
         let self = this
-        // let auth_token = this.$cookie.get('auth_token') , {"headers": auth_token}
          this.$refs[name].validate(async (valid) => {
           if (valid) {
             this.$Message.success('Submit')
@@ -239,33 +222,26 @@
       }
     },
     async mounted() {
-      let supplyerList = await service.supplyerList()
-      if(supplyerList === 401) {
+      let supplier = await vshopdata.getAllSupplier()
+      if(supplier === 401) {
         this.$router.push({ path: '/login' })
       } else {
-        this.supplyerList = supplyerList.data.aggregations.group_by_username.buckets
-        if(this.supplyerList.length>0) {
-          for(let i = 0; i < this.supplyerList.length; i++) {
-            let supplierName = _.find(this.cacheSupplier, this.supplyerList[i].key) 
-            if(supplierName == undefined) {
-              let supplier = await vshopList.get(this.supplyerList[i].key)
-              let c = _.find(supplier.data, 'company')
-              let v = _.find(supplier.data, 'virtualShopName')
-              if (c != undefined) {
-                this.cacheSupplier.push({[this.supplyerList[i].key]: c.company})
-                this.supplyerList[i].key = c.company 
-              } else if (v != undefined) {
-                this.cacheSupplier.push({[this.supplyerList[i].key]: v.virtualShopName})
-                this.supplyerList[i].key = v.virtualShopName
-              } else {
-              }
+        if(supplier.data.data.length > 0) {
+          for(let i = 0; i < supplier.data.data.length; i++) {
+            let count = await service.countProduct(supplier.data.data[i].id, 1)
+            supplier.data.data[i].doc_count = count.data.hits.total
+            // supplier.data.data[i].key = supplier.data.data[i].esUser
+            if (supplier.data.data[i].company != undefined) {
+              supplier.data.data[i].key1 = supplier.data.data[i].company
+            } else if (supplier.data.data[i].virtualShopName != undefined) {
+              supplier.data.data[i].key1 = supplier.data.data[i].virtualShopName 
             } else {
-              this.supplyerList[i].key = supplierName.key
+              supplier.data.data[i].key1 = supplier.data.data[i].id 
             }
           }
-          this.suplayerLoading = false
-          this.doc_count = this.supplyerList[0].doc_count
         }
+        this.supplyerList = supplier.data.data
+        this.suplayerLoading = false
       }
     }
   }

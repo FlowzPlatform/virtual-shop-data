@@ -1,24 +1,38 @@
 const config = require('./config.json')
-const table = config.table
+const extend = require('util')._extend
 const cxnOptions = config.cxnOptions
-const connOptions = config.connOptions
-const pdmUrl = config.pdmUrl
-const r = require('rethinkdbdash')(cxnOptions)
-const rethink = require('rethinkdbdash')(connOptions)
+if (process.env.rdbHost !== undefined && process.env.rdbHost !== '') {
+  cxnOptions.host = process.env.rdbHost
+}
+if (process.env.rdbPort !== undefined && process.env.rdbPort !== '') {
+  cxnOptions.port = process.env.rdbPort
+}
+const rethink = require('rethinkdbdash')(cxnOptions)
 const rfqQueue = require('rethinkdb-job-queue')
 let rpRequest = require('request-promise')
 let ESuserData = null
 var elasticsearch = require('elasticsearch')
 
-let optionsES = {
-  tls: 'https://',
-  host: '349d6e5f56299a9f7b9ff68ccd099977.us-west-2.aws.found.io',
-  path: '_xpack/security/user/',
-  port: '9243',
-  auth: 'elastic:cRrL0LF9MkBpRIMKP9g3dTgV'
+let ESConnection = extend({}, config.ESConnection)
+if (process.env.esHost !== undefined && process.env.esHost !== '') {
+  ESConnection.host = process.env.esHost
+}
+if (process.env.esPort !== undefined && process.env.esPort !== '') {
+  ESConnection.port = process.env.esPort
+}
+if (process.env.esAuth !== undefined && process.env.esAuth !== '') {
+  ESConnection.auth = process.env.esAuth
 }
 
-let esUrl = 'https://elastic:cRrL0LF9MkBpRIMKP9g3dTgV@349d6e5f56299a9f7b9ff68ccd099977.us-west-2.aws.found.io:9243'
+let optionsES = {
+  tls: 'https://',
+  host: ESConnection.host,
+  path: '_xpack/security/user/',
+  port: ESConnection.port,
+  auth: ESConnection.auth
+}
+
+let esUrl = 'https://' + ESConnection.auth + '@' + ESConnection.host + ':' + ESConnection.port
 
 let esClient = new elasticsearch.Client({
   host: esUrl,
@@ -34,37 +48,33 @@ const objQ = new rfqQueue(cxnOptions, queueOption)
 function getJobQueue () {
   objQ.process((job, next) => {
     // Get all suppliers approve data.
-    rethink.table('vshopDetail')
-    .filter(r.row("id").eq(job.data.vId))
-    .run().then(function(result) {
+    rethink.table(cxnOptions.vshopDetail)
+    .filter({id: job.data.vId})
+    .run().then(function (result) {
       doJob(job, result[0], next)
     })
   })
 }
 
-async function doJob (objWorkJob,result,next) {
-  if(!objWorkJob.data)
-  {
+async function doJob (objWorkJob, result, next) {
+  if (!objWorkJob.data) {
     return false
   }
-  // check user created on ES
   let userData = await getUserRequestResponse(objWorkJob)
   let getUserNextVersion1 = await getUserNewVersion(ESuserData[objWorkJob.data.vId])
   let esUpdateArr = []
-  for(let i=0;i<result.suppliers.length;i++){
+  for (let i = 0; i < result.suppliers.length; i++) {
     let supplyerName = result.suppliers[i].supplyerName
-    let sku = result.suppliers[i].products
-    let getEsSkuResponse = await getEsSku(supplyerName,sku)
-
-    for(let j=0;j<getEsSkuResponse.hits.hits.length;j++){
-      esUpdateArr.push({ 
-        "update": { 
-          "_index": "pdm1",
-          "_type": "product", 
-          "_id":getEsSkuResponse.hits.hits[j]._id
+    let selectedProducts = result.suppliers[i].products
+    for(let j = 0; j < selectedProducts.length; j++) {
+      esUpdateArr.push({
+        "update": {
+          "_index": 'pdm1',
+          "_type": 'product',
+          "_id": selectedProducts[j].id
         }
       },
-      { 
+      {
         "script": {
           "inline": "ctx._source.vid.add(params.newVid)",
           "params" : {
@@ -75,27 +85,27 @@ async function doJob (objWorkJob,result,next) {
       })
     }
   }
-
   if(esUpdateArr.length > 0) {
     let dumpEsResponse = await dumpToES(esUpdateArr)
     let updateRdbResponse = await updateInRdb(objWorkJob,userData)
     if(updateRdbResponse){
+      console.log('Sucessfull..!')
       next(null,"sucessfull")
-    }
-    else{
+    } else {
+      console.log('Unsucessfull..!')
       next(null,"unsucessfull")
     }
   }
 
 }
 
-async function updateInRdb(objWorkJob,userData){
-  return rethink.table('vshopdata')
-    .filter(r.row("id").eq(objWorkJob.data.vId))
+async function updateInRdb (objWorkJob, userData) {
+  return rethink.table(cxnOptions.vshopData)
+    .filter({'id': objWorkJob.data.vId})
     .update({
-      "esUser":  userData[objWorkJob.data.vId].username,
-      "password":  "123456",
-      "status":  "completed"
+      "esUser": userData[objWorkJob.data.vId].username,
+      "password": "123456",
+      "status": "completed"
     })
     .run()
 }
@@ -104,19 +114,18 @@ async function dumpToES (makeProductJsonObj) {
   let bulkRowsString = makeProductJsonObj.map(function (row) {
     return JSON.stringify(row)
   }).join('\n') + '\n'
-  // bulkRowsString += '\n'
-  // console.log(makeProductJsonObj);
   return new Promise(function (resolve) {
     esClient.bulk({body: makeProductJsonObj}, function (err, resp) {
       if (!err) {
         resolve('Inserted')
+      } else {
+        console.log('Error : ', err)
       }
     })
   })
 }
 
 function getUserNewVersion (ESUser) {
-  // console.log("===============",ESUser)
   let versionNo = 1;
   if (ESUser.metadata.user_version_history) {
     versionNo = ESUser.metadata.user_version_history.length + 1
@@ -124,24 +133,24 @@ function getUserNewVersion (ESUser) {
   return 'dist'+ ESUser.username + '-' + versionNo
 }
 
+// Unused Function
 async function getEsSku(supplyerName,sku){
+  let body = {
+    "_source":["_id"],
+    "query": {
+      "bool": {
+        "must": [
+          { "match": { "supplier_info.username":supplyerName }},
+          { "match": { "country": "US" }},
+          { "terms": { "sku.raw": sku }}
+        ]
+      }
+    }
+  }
   let response = await esClient.search({
     index:  'pdm1',
     type:  'product',
-    body: {
-      "_source":["_id"],
-      "query": {
-        "bool": {
-          "must": [
-            { "match": { "supplier_info.username":supplyerName }},
-            { "match": { "country": "US" }}
-          ],
-          "should" : sku.map(function(obj) {
-             return { "match" : { "sku" : obj }}
-          })
-        }
-      }   
-    }
+    body: body
   })
   return response
 }
@@ -186,7 +195,7 @@ async function makeNewUser (objWorkJob) {
   let userObject = {
     'username': vId,
     'password': '123456',
-    'roles': ['read_write'],
+    'roles': ['read'],
     'full_name': username,
     'email': emailId,
     'metadata': {

@@ -8,7 +8,7 @@ export default {
     if (rowId != undefined) {
       return api.request('get', '/' + model + '/' + rowId)
     } else {
-      return api.request('get', '/' + model + '?userId')  
+      return api.request('get', '/' + model)
     }
   },
   getAll: () => {

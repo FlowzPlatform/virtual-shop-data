@@ -1,14 +1,15 @@
 {
   "cxnOptions": {
-    "host": "devrethink.flowzcluster.tk",
+    "host": "localhost",
     "port": 28015,
-    "db": "importDataJobqueue"
+    "db": "feather_product",
+    "vshopData":"vshopdata",
+    "vshopDetail":"vshopDetail"
   },
-  "connOptions": {
-    "host": "devrethink.flowzcluster.tk",
-    "port": 28015,
-    "db": "feather_product"
+  "ESConnection": {
+    "host": "localhost",
+    "port": "9600",
+    "auth": "elastic:changeme"
   },
-  "table": "vshopdata",
-  "pdmUrl": "http://172.16.230.151:3038"
+  "pdmUrl": "https://api.flowzcluster.tk/pdmnew"
 }

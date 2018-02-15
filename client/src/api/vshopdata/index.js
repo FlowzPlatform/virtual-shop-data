@@ -3,5 +3,8 @@ let model = 'vshopdata'
 export default {
   add: (data) => {
   	return api.request('post', '/' + model, data)
+  },
+  getAllSupplier: () => {
+    return api.request('get', '/' + model + '?userType=supplier')
   }
 }
