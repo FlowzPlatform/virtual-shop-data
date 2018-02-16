@@ -231,9 +231,9 @@
             let count = await service.countProduct(supplier.data.data[i].id, 1)
             supplier.data.data[i].doc_count = count.data.hits.total
             // supplier.data.data[i].key = supplier.data.data[i].esUser
-            if (supplier.data.data[i].company != undefined) {
+            if (supplier.data.data[i].company != undefined && supplier.data.data[i].company != '') {
               supplier.data.data[i].key1 = supplier.data.data[i].company
-            } else if (supplier.data.data[i].virtualShopName != undefined) {
+            } else if (supplier.data.data[i].virtualShopName != undefined && supplier.data.data[i].virtualShopName != '') {
               supplier.data.data[i].key1 = supplier.data.data[i].virtualShopName 
             } else {
               supplier.data.data[i].key1 = supplier.data.data[i].id 
