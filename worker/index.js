@@ -1,4 +1,5 @@
 const config = require('./config.json')
+const uuidv1 = require('uuid/v1')
 const extend = require('util')._extend
 const cxnOptions = config.cxnOptions
 if (process.env.rdbHost !== undefined && process.env.rdbHost !== '') {
@@ -23,7 +24,7 @@ if (process.env.esPort !== undefined && process.env.esPort !== '') {
 if (process.env.esAuth !== undefined && process.env.esAuth !== '') {
   ESConnection.auth = process.env.esAuth
 }
-
+let password
 let optionsES = {
   tls: 'https://',
   host: ESConnection.host,
@@ -104,7 +105,7 @@ async function updateInRdb (objWorkJob, userData) {
     .filter({'id': objWorkJob.data.vId})
     .update({
       "esUser": userData[objWorkJob.data.vId].username,
-      "password": "123456",
+      "password": password,
       "status": "completed"
     })
     .run()
@@ -191,10 +192,11 @@ async function makeNewUser (objWorkJob) {
   let emailId = jobData.userdetail.emailId
   let username = jobData.userdetail.username
   let vId = jobData.vId
-
+  password = uuidv1();
+  
   let userObject = {
     'username': vId,
-    'password': '123456',
+    'password': password,
     'roles': ['read'],
     'full_name': username,
     'email': emailId,
