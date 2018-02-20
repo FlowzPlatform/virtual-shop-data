@@ -28,6 +28,11 @@
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
           <Input v-model="productSearch" placeholder="Search Product..."></Input>
           <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-selection-change="getSelectedProduct"></Table>
+          <div style="margin: 10px;overflow: hidden">
+            <div style="float: right;">
+              <Page :total="len" :current="1" @on-change="changePage"></Page>
+            </div>
+          </div>
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
           <Table border :columns="selectedProducts" :data="selectedData"></Table>
@@ -46,6 +51,7 @@
     name: 'home',
     data () {
       return {
+        searchProduct: [],
         modalDelete: false,
         formValidate: {
           name: ''
@@ -141,10 +147,27 @@
         selectedSupplyer: '',
         selectedSupplyerName: '',
         doc_count: 0,
-        cacheSupplier: []
+        cacheSupplier: [],
+        len: 0
       }
     },
     methods:{
+      async changePage (p) {
+        this.searchProduct = await this.mockTableData1(p, 200)
+      },
+      async mockTableData1 (p,size) {
+        let productList = await service.productList(this.selectedSupplyer, p * size, (p - 1) * size)
+        if(productList === 401){
+          this.$router.push({ path: '/login' })
+        } else {
+          this.productList = productList.data.hits.hits
+          if(this.productList.length > 0){
+            this.productLoading = false
+          }
+        }
+        return this.productList.slice()
+        // return data1.slice((p - 1) * size, p * size);
+      },
       async confirmDelete(index) {
         let self = this
         this.$Modal.confirm({
@@ -159,15 +182,8 @@
         this.selectedSupplyer = data.id
         this.selectedSupplyerName = data.key1
         this.productLoading = true
-        let productList = await service.productList(data.id, data.doc_count)
-        if(productList === 401){
-          this.$router.push({ path: '/login' })
-        } else {
-          this.productList = productList.data.hits.hits
-          if(this.productList.length > 0){
-            this.productLoading = false
-          }
-        }
+        this.len = data.doc_count
+        this.searchProduct = await this.mockTableData1(1, 200)
       },
       getSelectedProduct(data){
         let self = this
@@ -211,15 +227,15 @@
       }
     },
     computed:{
-      searchProduct(){
-        let self = this
-        let data1 = this.productList.slice()
-        return data1.filter(function(el) {
-          if( el._source.product_name.toLowerCase().includes(self.productSearch.toLowerCase())){
-            return el
-          }
-        })
-      }
+      // searchProduct(){
+      //   let self = this
+      //   let data1 = this.productList.slice()
+        // return data1.filter(function(el) {
+        //   if( el._source.product_name.toLowerCase().includes(self.productSearch.toLowerCase())){
+        //     return el
+        //   }
+        // })
+      // }
     },
     async mounted() {
       let supplier = await vshopdata.getAllSupplier()
