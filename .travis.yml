@@ -34,6 +34,27 @@ jobs:
             docker tag vshopdata_frontend_flowz:qa $DOCKER_USERNAME/vshopdata_frontend_flowz:qa;
             docker push $DOCKER_USERNAME/vshopdata_frontend_flowz:qa;
         fi'
+    - stage: Vshopdata-Worker
+      script:
+      - 'if [ ${TRAVIS_BRANCH} = "master" ]; then
+            docker login -u="$DOCKER_USERNAME_FLOWZ" -p="$DOCKER_PASSWORD_FLOWZ";
+            docker build -t vshopdata_worker:latest ./worker/;
+            docker images;
+            docker tag vshopdata_worker:latest $DOCKER_USERNAME_FLOWZ/vshopdata_worker:latest;
+            docker push $DOCKER_USERNAME_FLOWZ/vshopdata_worker:latest;
+        elif [ ${TRAVIS_BRANCH} = "develop" ]; then
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t vshopdata_worker:dev ./worker/;
+            docker images;
+            docker tag vshopdata_worker:dev $DOCKER_USERNAME/vshopdata_worker:dev;
+            docker push $DOCKER_USERNAME/vshopdata_worker:dev;
+        else
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t vshopdata_worker:qa ./worker/;
+            docker images;
+            docker tag vshopdata_worker:qa $DOCKER_USERNAME/vshopdata_worker:qa;
+            docker push $DOCKER_USERNAME/vshopdata_worker:qa;
+        fi'
     - stage: Upgrade Rancher Service
       script:
       - bash ./upgrade.sh

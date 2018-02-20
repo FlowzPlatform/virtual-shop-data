@@ -38,6 +38,9 @@ fi
 SERVICE_ID=`curl -u ""$RANCHER_USER":"$RANCHER_PASS"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "http://rancher.flowz.com:8080/v2-beta/projects/$ENV_ID/services?name=vshopdata-frontend-flowz" | jq '.data[].id' | tr -d '"'`
 echo $SERVICE_ID
 
+SERVICE_ID_WORKER=`curl -u ""$RANCHER_USER":"$RANCHER_PASS"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "http://rancher.flowz.com:8080/v2-beta/projects/$ENV_ID/services?name=vshopdata-worker" | jq '.data[].id' | tr -d '"'`
+echo $SERVICE_ID_WORKER
+
 curl -u ""$RANCHER_USER":"$RANCHER_PASS"" \
 -X POST \
 -H 'Accept: application/json' \
@@ -45,3 +48,11 @@ curl -u ""$RANCHER_USER":"$RANCHER_PASS"" \
 -d '{
      "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/vshopdata_frontend_flowz:'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "machine=vshopdata-front","io.rancher.scheduler.affinity:container_label_soft_ne": "io.rancher.stack_service.name=front-flowz/vshopdata-frontend-flowz"},"ports": ["443:443/tcp","80:80/tcp"],"healthCheck": {"type": "instanceHealthCheck","healthyThreshold": 2,"initializingTimeout": 60000,"interval": 2000,"name": null,"port": 80,"recreateOnQuorumStrategyConfig": {"type": "recreateOnQuorumStrategyConfig","quorum": 1},"reinitializingTimeout": 60000,"requestLine": "GET \"http://localhost\" \"HTTP/1.0\"","responseTimeout": 60000,"strategy": "recreateOnQuorum","unhealthyThreshold": 3},"networkMode": "managed"}},"toServiceStrategy":null}' \
 http://rancher.flowz.com:8080/v2-beta/projects/$ENV_ID/services/$SERVICE_ID?action=upgrade
+
+curl -u ""$RANCHER_USER":"$RANCHER_PASS"" \
+-X POST \
+-H 'Accept: application/json' \
+-H 'Content-Type: application/json' \
+-d '{
+     "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/vshopdata_worker :'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "machine=cluster-flowz"},"environment": {"rdbHost": "'"$rdbHost"'","rdbPort": "'"$rdbPort"'","esHost":"'"$esHost"'","esPort":"'"$esPort"'","esAuth":"'"$esAuth"'"}}},"toServiceStrategy":null}' \
+http://rancher.flowz.com:8080/v2-beta/projects/$ENV_ID/services/$SERVICE_ID_WORKER?action=upgrade
