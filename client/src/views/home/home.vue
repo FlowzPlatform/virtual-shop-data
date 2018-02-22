@@ -27,10 +27,10 @@
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
           <Input v-model="productSearch" placeholder="Search Product..."></Input>
-          <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-selection-change="getSelectedProduct"></Table>
+          <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-select="getSelectedProduct" @on-select-all="getSelectedProduct" @on-select-cancel="deselectRow"></Table>
           <div style="margin: 10px;overflow: hidden">
             <div style="float: right;">
-              <Page :total="len" :current="1" @on-change="changePage"></Page>
+              <Page :total="productList.length" :current="1" @on-change="changePage" :page-size="200" size="small" show-elevator></Page>
             </div>
           </div>
         </Col>
@@ -144,30 +144,52 @@
         supplyerList: [],
         productList: [],
         selectedData: [],
-        selectedSupplyer: '',
+        selectedSupplyerId: '',
         selectedSupplyerName: '',
         doc_count: 0,
         cacheSupplier: [],
-        len: 0
+        tempData: []
       }
     },
     methods:{
-      async changePage (p) {
-        this.searchProduct = await this.mockTableData1(p, 200)
+      async changePage (pageNo) {
+      this.searchProduct = await this.makeChunk(pageNo, 200)
+      //   this.productLoading = true
+      //   let oldRecord = _.union(...(_.chain(this.selectedData).map(m => {
+      //     return m.products
+      //   }).value()))
+      //   this.searchProduct = await this.mockTableData1(p, 200).then(response => {
+      //     return _.chain(response).map(m => {
+      //       m._checked = _.find(oldRecord, (f, key) => {
+      //         return f[m._id]
+      //       }) !== undefined ? true : false
+      //       return m
+      //     }).value()
+      //     this.productLoading = false
+      //   })
       },
-      async mockTableData1 (p,size) {
-        let productList = await service.productList(this.selectedSupplyer, p * size, (p - 1) * size)
-        if(productList === 401){
-          this.$router.push({ path: '/login' })
-        } else {
-          this.productList = productList.data.hits.hits
-          if(this.productList.length > 0){
-            this.productLoading = false
+      async makeChunk (pageNo, size) {
+        let chunk = []
+        for (let i=(pageNo - 1) * size; i < size + (pageNo - 1) * size; i++) {
+          if(this.productList[i] != undefined) {
+            await chunk.push(this.productList[i])
           }
         }
-        return this.productList.slice()
-        // return data1.slice((p - 1) * size, p * size);
+        return chunk.slice()
       },
+      // async mockTableData1 (p,size) {
+      //   let productList = await service.productList(this.selectedSupplyerId, 200, (p - 1) * size)
+      //   if(productList === 401){
+      //     this.$router.push({ path: '/login' })
+      //   } else {
+      //     this.productList = productList.data.hits.hits
+      //     if(this.productList.length > 0){
+      //       this.productLoading = false
+      //     }
+      //   }
+      //   return this.productList.slice()
+      //   // return data1.slice((p - 1) * size, p * size);
+      // },
       async confirmDelete(index) {
         let self = this
         this.$Modal.confirm({
@@ -178,30 +200,82 @@
           }
         })
       },
-      async getProducts(data){
-        this.selectedSupplyer = data.id
-        this.selectedSupplyerName = data.key1
-        this.productLoading = true
-        this.len = data.doc_count
-        this.searchProduct = await this.mockTableData1(1, 200)
-      },
-      getSelectedProduct(data){
+      async deselectRow(selection,row) {
         let self = this
-        let obj = this.selectedData.filter(function (obj) { return obj.supplyerName === self.selectedSupplyer })
-        if(obj.length<1){
-          this.selectedData.push({'supplyerName':this.selectedSupplyer,'products':[],'approve':true,'name':self.selectedSupplyerName})
-        }
+        // for (let i = 0; i < this.selectedData.length; i++) {
+        //   if (this.selectedData[i].supplyerName == this.selectedSupplyerId) {
+        //     // this.selectedData[i].products.splice(_.findIndex( this.selectedData[i].products, row._id), 1)
+        //     for(let j = 0; j < this.selectedData[i].products.length; j++) {
+        //       if (this.selectedData[i].products[j][row._id]) {
+        //         console.log('true', this.selectedData[i].products[j])
+        //         delete this.selectedData[i].products[j]
+        //         console.log('true', this.selectedData[i].products[j])
+        //       }
+        //     }
+        //     console.log('this.selectedData', this.selectedData)
+        //   }
+        // }
+        // _.findIndex(el.products, row._id)
         this.selectedData.filter(function(el) {
-          if(el.supplyerName == self.selectedSupplyer){
-            el.products = data.map(function(a) {
-              return {'sku': a._source.sku, 'id':a._id}
-            })
+          el.products.splice(_.findIndex(el.products, row._id), 1)
+        })
+        this.searchProduct.filter(function(el) {
+          if (el._id == row._id) {
+            el._checked = false
+          }
+        })
+        this.tempData.filter(function(el) {
+          if (el._id == row._id) {
+            _.remove(self.tempData, ['_id', row._id])
           }
         })
       },
-      async submitData(name){
+      async getProducts(data){
+        if(this.selectedSupplyerId != data.id) {
+          this.selectedSupplyerId = data.id
+          this.selectedSupplyerName = data.key1
+          this.productLoading = true
+          let productList = await service.productList(this.selectedSupplyerId, data.doc_count)
+          if(productList === 401) {
+            this.$router.push({ path: '/login' })
+          } else {
+            this.productList = productList.data.hits.hits
+            if(this.productList.length > 0){
+              this.productLoading = false
+            }
+          }
+          this.searchProduct = await this.makeChunk(1, 200)
+        }
+        // this.searchProduct = await this.mockTableData1(1, 200)
+      },
+      async getSelectedProduct(data, row) {
+        console.log('row', row)
         let self = this
-         this.$refs[name].validate(async (valid) => {
+        for(var i = 0; i < data.length; i++) {
+          await self.tempData.push(data[i])
+        }
+        self.tempData = _.uniqBy(self.tempData, '_id')
+        let obj = this.selectedData.filter(function (obj) { return obj.supplyerName === self.selectedSupplyerId })
+        if(obj.length<1){
+          this.selectedData.push({'supplyerName':this.selectedSupplyerId,'products':[],'approve':true,'name':self.selectedSupplyerName})
+        }  
+        this.selectedData.filter(function(el) {
+          if(el.supplyerName == self.selectedSupplyerId) {
+            el.products = self.tempData.map(function(ml) {
+              let a = ml._id  
+              return { [a]: ml._source.sku }
+            })
+          }
+        })
+        this.searchProduct.filter(async function(el) {
+          el._checked = _.find(data, (ml) => {
+            return el._id == ml._id
+          }) !== undefined ? true : false
+        })
+      },
+      submitData(name){
+        let self = this
+         this.$refs[name].validate(valid => {
           if (valid) {
             this.$Message.success('Submit')
             if(this.selectedData.length>0){
