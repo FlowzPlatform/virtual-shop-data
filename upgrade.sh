@@ -54,5 +54,5 @@ curl -u ""$RANCHER_USER":"$RANCHER_PASS"" \
 -H 'Accept: application/json' \
 -H 'Content-Type: application/json' \
 -d '{
-     "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/vshopdata_worker :'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "machine=cluster-flowz"},"environment": {"rdbHost": "'"$rdbHost"'","rdbPort": "'"$rdbPort"'","esHost":"'"$esHost"'","esPort":"'"$esPort"'","esAuth":"'"$esAuth"'"}}},"toServiceStrategy":null}' \
+     "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/vshopdata_worker:'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "machine=cluster-flowz"},"environment": {"rdbHost": "'"$rdbHost"'","rdbPort": "'"$rdbPort"'","esHost":"'"$esHost"'","esPort":"'"$esPort"'","esAuth":"'"$esAuth"'"}}},"toServiceStrategy":null}' \
 http://rancher.flowz.com:8080/v2-beta/projects/$ENV_ID/services/$SERVICE_ID_WORKER?action=upgrade
