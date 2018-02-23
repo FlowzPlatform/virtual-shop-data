@@ -27,12 +27,12 @@
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
           <Input v-model="productSearch" placeholder="Search Product..."></Input>
-          <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-select="getSelectedProduct" @on-select-all="getSelectedProduct" @on-select-cancel="deselectRow"></Table>
+          <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-select="getSelectedProduct" @on-select-all="getSelectedProduct" @on-select-cancel="deselectRow" @on-selection-change="deselectRow"></Table>
           <div style="margin: 10px;overflow: hidden">
             <div style="float: right;">
               <Page :total="productList.length" :current="1" @on-change="changePage" :page-size="200" size="small" show-elevator></Page>
             </div>
-          </div>
+          </div>          
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
           <Table border :columns="selectedProducts" :data="selectedData"></Table>
@@ -148,7 +148,8 @@
         selectedSupplyerName: '',
         doc_count: 0,
         cacheSupplier: [],
-        tempData: []
+        tempData: [],
+        maintainState: {}
       }
     },
     methods:{
@@ -202,36 +203,37 @@
       },
       async deselectRow(selection,row) {
         let self = this
-        // for (let i = 0; i < this.selectedData.length; i++) {
-        //   if (this.selectedData[i].supplyerName == this.selectedSupplyerId) {
-        //     // this.selectedData[i].products.splice(_.findIndex( this.selectedData[i].products, row._id), 1)
-        //     for(let j = 0; j < this.selectedData[i].products.length; j++) {
-        //       if (this.selectedData[i].products[j][row._id]) {
-        //         console.log('true', this.selectedData[i].products[j])
-        //         delete this.selectedData[i].products[j]
-        //         console.log('true', this.selectedData[i].products[j])
-        //       }
-        //     }
-        //     console.log('this.selectedData', this.selectedData)
-        //   }
-        // }
-        // _.findIndex(el.products, row._id)
-        this.selectedData.filter(function(el) {
-          el.products.splice(_.findIndex(el.products, row._id), 1)
-        })
-        this.searchProduct.filter(function(el) {
-          if (el._id == row._id) {
+        if(selection != undefined && row != undefined) {
+          this.selectedData.filter(function(el) {
+            if(el.supplyerName == self.selectedSupplyerId) {
+              el.products.splice(_.findIndex(el.products, row._id), 1)
+            }
+          })
+          this.searchProduct.filter(function(el) {
+            if (el._id == row._id) {
+              el._checked = false
+            }
+          })
+          this.tempData.filter(function(el) {
+            if (el._id == row._id) {
+              _.remove(self.tempData, ['_id', row._id])
+            }
+          })
+        } else if (selection.length == 0 && row == undefined) {
+          this.searchProduct.filter(async function(el) {
+              self.selectedData.filter(function(ml) {
+                if(ml.supplyerName == self.selectedSupplyerId) {
+                  ml.products.splice(_.findIndex(ml.products, el._id), 1)
+                }
+              })
+            await _.remove(self.tempData, ['_id', el._id])
             el._checked = false
-          }
-        })
-        this.tempData.filter(function(el) {
-          if (el._id == row._id) {
-            _.remove(self.tempData, ['_id', row._id])
-          }
-        })
+          })
+        }
       },
-      async getProducts(data){
-        if(this.selectedSupplyerId != data.id) {
+      async getProducts(data) {
+        this.maintainState[data.id] !== undefined ? this.productList = this.maintainState[data.id] : this.productList = []
+        if(this.selectedSupplyerId != data.id && this.maintainState[data.id] == undefined ) {
           this.selectedSupplyerId = data.id
           this.selectedSupplyerName = data.key1
           this.productLoading = true
@@ -240,16 +242,21 @@
             this.$router.push({ path: '/login' })
           } else {
             this.productList = productList.data.hits.hits
-            if(this.productList.length > 0){
-              this.productLoading = false
-            }
+            this.productLoading = false
           }
           this.searchProduct = await this.makeChunk(1, 200)
+        } else {
+          this.selectedSupplyerId = data.id
+          this.selectedSupplyerName = data.key1
+          this.searchProduct = await this.makeChunk(1, 200)
         }
-        // this.searchProduct = await this.mockTableData1(1, 200)
+        if(this.maintainState[data.id] == undefined && this.productList.length > 0) {
+          this.maintainState[this.selectedSupplyerId] = this.productList
+        }
+        // this.selectedData = []
+        this.tempData = []
       },
       async getSelectedProduct(data, row) {
-        console.log('row', row)
         let self = this
         for(var i = 0; i < data.length; i++) {
           await self.tempData.push(data[i])

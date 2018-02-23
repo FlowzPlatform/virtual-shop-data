@@ -10,6 +10,5 @@
     "host": "localhost",
     "port": "9600",
     "auth": "elastic:changeme"
-  },
-  "pdmUrl": "https://api.flowzcluster.tk/pdmnew"
+  }
 }

@@ -67,12 +67,12 @@ async function doJob (objWorkJob, result, next) {
   for (let i = 0; i < result.suppliers.length; i++) {
     let supplyerName = result.suppliers[i].supplyerName
     let selectedProducts = result.suppliers[i].products
-    for(let j = 0; j < selectedProducts.length; j++) {
+    for(var id in selectedProducts) {
       esUpdateArr.push({
         "update": {
           "_index": 'pdm1',
           "_type": 'product',
-          "_id": selectedProducts[j].id
+          "_id": id
         }
       },
       {
