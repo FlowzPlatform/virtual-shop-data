@@ -26,7 +26,17 @@
           <Table :loading="suplayerLoading" :columns="supplyer" :data="supplyerList" :highlight-row="true" @on-row-click="getProducts"></Table>
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
-          <Input v-model="productSearch" placeholder="Search Product..."></Input>
+          <Row>
+            <Col span="5">
+              <Checkbox type="text" v-model="selectAll" size="small" @on-change="selectedAll" :disabled="checkIt">
+                <span v-if="!selectAll">Select All</span>
+                <span v-else>Deselect All</span>
+              </Checkbox>
+            </Col>
+            <Col span="19">
+              <Input @on-change="searchProduct" placeholder="Search product..." icon="ios-search"></Input>
+            </Col>
+          </Row>
           <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-select="getSelectedProduct" @on-select-all="getSelectedProduct" @on-select-cancel="deselectRow" @on-selection-change="deselectRow"></Table>
           <div style="margin: 10px;overflow: hidden">
             <div style="float: right;">
@@ -52,6 +62,7 @@
     data () {
       return {
         searchProduct: [],
+        selectAll: false,
         modalDelete: false,
         formValidate: {
           name: ''
@@ -140,7 +151,6 @@
         ],
         suplayerLoading: true,
         productLoading: false,
-        productSearch: '',
         supplyerList: [],
         productList: [],
         selectedData: [],
@@ -149,25 +159,59 @@
         doc_count: 0,
         cacheSupplier: [],
         tempData: [],
-        maintainState: {}
+        maintainState: {},
+        selectAllState: {}
       }
     },
     methods:{
+      async selectedAll() {
+        let self = this
+        if(this.selectAll) {
+          for(var i = 0; i < this.productList.length; i++) {
+            await self.tempData.push(this.productList[i])
+          }
+          this.maintainState[self.selectedSupplyerId + 'temp'] = _.uniqBy(self.tempData, '_id')
+          let obj = this.selectedData.filter(function (obj) { return obj.supplyerName === self.selectedSupplyerId })
+          if(obj.length<1){
+            this.selectedData.push({'supplyerName':this.selectedSupplyerId,'products':[],'approve':true,'name':self.selectedSupplyerName})
+          }
+          this.selectedData.filter(function(el) {
+            if (el.supplyerName == self.selectedSupplyerId) {
+              el.products = self.productList.map(function(ml) {
+                let a = ml._id  
+                return { [a]: ml._source.sku }
+              })
+              if (el.products.length == self.productList.length) {
+                self.selectAll = true
+                self.selectAllState[self.selectedSupplyerId] = true
+              } else {
+                self.selectAll = false
+                self.selectAllState[self.selectedSupplyerId] = false
+              }
+            }
+          })
+          await _.find(self.productList, (ml) => {
+            ml._checked = true
+          })
+          self.searchProduct = await self.makeChunk(1, 200)
+        } else {
+          this.selectAll = false
+          this.selectAllState[this.selectedSupplyerId] = false
+          this.productList.filter(async function(el) {
+            self.selectedData.filter(function(ml) {
+              if(ml.supplyerName == self.selectedSupplyerId) {
+                ml.products.splice(_.findIndex(ml.products, el._id), 1)
+              }
+            })
+            await _.remove(self.tempData, ['_id', el._id])
+            el._checked = false
+          })
+          self.maintainState[this.selectedSupplyerId + 'temp'] = self.tempData
+          self.searchProduct = await self.makeChunk(1, 200)
+        }
+      },
       async changePage (pageNo) {
-      this.searchProduct = await this.makeChunk(pageNo, 200)
-      //   this.productLoading = true
-      //   let oldRecord = _.union(...(_.chain(this.selectedData).map(m => {
-      //     return m.products
-      //   }).value()))
-      //   this.searchProduct = await this.mockTableData1(p, 200).then(response => {
-      //     return _.chain(response).map(m => {
-      //       m._checked = _.find(oldRecord, (f, key) => {
-      //         return f[m._id]
-      //       }) !== undefined ? true : false
-      //       return m
-      //     }).value()
-      //     this.productLoading = false
-      //   })
+        this.searchProduct = await this.makeChunk(pageNo, 200)
       },
       async makeChunk (pageNo, size) {
         let chunk = []
@@ -178,19 +222,6 @@
         }
         return chunk.slice()
       },
-      // async mockTableData1 (p,size) {
-      //   let productList = await service.productList(this.selectedSupplyerId, 200, (p - 1) * size)
-      //   if(productList === 401){
-      //     this.$router.push({ path: '/login' })
-      //   } else {
-      //     this.productList = productList.data.hits.hits
-      //     if(this.productList.length > 0){
-      //       this.productLoading = false
-      //     }
-      //   }
-      //   return this.productList.slice()
-      //   // return data1.slice((p - 1) * size, p * size);
-      // },
       async confirmDelete(index) {
         let self = this
         this.$Modal.confirm({
@@ -207,6 +238,13 @@
           this.selectedData.filter(function(el) {
             if(el.supplyerName == self.selectedSupplyerId) {
               el.products.splice(_.findIndex(el.products, row._id), 1)
+              if(el.products.length == self.productList.length){
+                self.selectAll = true
+                self.selectAllState[self.selectedSupplyerId] = true
+              } else {
+                self.selectAll = false
+                self.selectAllState[self.selectedSupplyerId] = false
+              }
             }
           })
           this.searchProduct.filter(function(el) {
@@ -219,20 +257,26 @@
               _.remove(self.tempData, ['_id', row._id])
             }
           })
+          this.maintainState[this.selectedSupplyerId + 'temp'] = this.tempData
         } else if (selection.length == 0 && row == undefined) {
+          this.selectAll = false
+          this.selectAllState[this.selectedSupplyerId] = false
           this.searchProduct.filter(async function(el) {
-              self.selectedData.filter(function(ml) {
-                if(ml.supplyerName == self.selectedSupplyerId) {
-                  ml.products.splice(_.findIndex(ml.products, el._id), 1)
-                }
-              })
+            self.selectedData.filter(function(ml) {
+              if(ml.supplyerName == self.selectedSupplyerId) {
+                ml.products.splice(_.findIndex(ml.products, el._id), 1)
+              }
+            })
             await _.remove(self.tempData, ['_id', el._id])
             el._checked = false
           })
+          self.maintainState[this.selectedSupplyerId + 'temp'] = self.tempData
         }
       },
       async getProducts(data) {
+        this.selectAll = this.selectAllState[data.id]
         this.maintainState[data.id] !== undefined ? this.productList = this.maintainState[data.id] : this.productList = []
+        this.tempData = this.maintainState[data.id + 'temp'] !== undefined ? await _.uniqBy(this.maintainState[data.id + 'temp'], '_id') : []
         if(this.selectedSupplyerId != data.id && this.maintainState[data.id] == undefined ) {
           this.selectedSupplyerId = data.id
           this.selectedSupplyerName = data.key1
@@ -253,15 +297,20 @@
         if(this.maintainState[data.id] == undefined && this.productList.length > 0) {
           this.maintainState[this.selectedSupplyerId] = this.productList
         }
-        // this.selectedData = []
-        this.tempData = []
+        if(this.maintainState[data.id + 'temp'] == undefined) {
+          this.maintainState[this.selectedSupplyerId + 'temp'] = []
+        }
       },
       async getSelectedProduct(data, row) {
         let self = this
         for(var i = 0; i < data.length; i++) {
           await self.tempData.push(data[i])
+          if(self.maintainState[this.selectedSupplyerId + 'temp'] != undefined) {
+            await self.maintainState[this.selectedSupplyerId + 'temp'].push(data[i])
+          }
         }
-        self.tempData = _.uniqBy(self.tempData, '_id')
+        self.maintainState[this.selectedSupplyerId + 'temp'] = _.uniqBy(self.maintainState[this.selectedSupplyerId + 'temp'], '_id')
+        self.tempData = await _.uniqBy(self.tempData, '_id')
         let obj = this.selectedData.filter(function (obj) { return obj.supplyerName === self.selectedSupplyerId })
         if(obj.length<1){
           this.selectedData.push({'supplyerName':this.selectedSupplyerId,'products':[],'approve':true,'name':self.selectedSupplyerName})
@@ -272,6 +321,13 @@
               let a = ml._id  
               return { [a]: ml._source.sku }
             })
+            if(el.products.length == self.productList.length){
+              self.selectAll = true
+              self.selectAllState[self.selectedSupplyerId] = true
+            } else {
+              self.selectAll = false
+              self.selectAllState[self.selectedSupplyerId] = false
+            }
           }
         })
         this.searchProduct.filter(async function(el) {
@@ -307,17 +363,6 @@
         })
       }
     },
-    computed:{
-      // searchProduct(){
-      //   let self = this
-      //   let data1 = this.productList.slice()
-        // return data1.filter(function(el) {
-        //   if( el._source.product_name.toLowerCase().includes(self.productSearch.toLowerCase())){
-        //     return el
-        //   }
-        // })
-      // }
-    },
     async mounted() {
       let supplier = await vshopdata.getAllSupplier()
       if(supplier === 401) {
@@ -339,6 +384,11 @@
         }
         this.supplyerList = supplier.data.data
         this.suplayerLoading = false
+      }
+    },
+    computed: {
+      checkIt: function () {
+        return this.productList.length > 0 ? false : true
       }
     }
   }
