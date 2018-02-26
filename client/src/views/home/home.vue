@@ -17,7 +17,7 @@
           </Form>
         </Col>
         <Col :md="{ span: 2 }">
-          <Button type="primary" long @click="submitData('formValidate')">Submit</Button>
+          <Button :loading="sbmtLoading" type="primary" long @click="submitData('formValidate')">Submit</Button>
         </Col>
       </Row>
       
@@ -61,6 +61,7 @@
     name: 'home',
     data () {
       return {
+        sbmtLoading: false,
         searchProduct: [],
         selectAll: false,
         modalDelete: false,
@@ -262,13 +263,15 @@
           this.selectAll = false
           this.selectAllState[this.selectedSupplyerId] = false
           this.searchProduct.filter(async function(el) {
-            self.selectedData.filter(function(ml) {
+            self.selectedData.filter(async function(ml) {
               if(ml.supplyerName == self.selectedSupplyerId) {
-                ml.products.splice(_.findIndex(ml.products, el._id), 1)
+                if( _.findIndex(ml.products, el._id) != -1) {
+                  ml.products.splice(_.findIndex(ml.products, el._id), 1)
+                  await _.remove(self.tempData, ['_id', el._id])
+                  el._checked = false
+                }
               }
             })
-            await _.remove(self.tempData, ['_id', el._id])
-            el._checked = false
           })
           self.maintainState[this.selectedSupplyerId + 'temp'] = self.tempData
         }
@@ -324,11 +327,9 @@
             if(el.products.length == self.productList.length){
               self.selectAll = true
               self.selectAllState[self.selectedSupplyerId] = true
-              console.log('self.selectAll true', self.selectAll)
             } else {
               self.selectAll = false
               self.selectAllState[self.selectedSupplyerId] = false
-              console.log('self.selectAll false', self.selectAll)
             }
           }
         })
@@ -342,7 +343,7 @@
         let self = this
          this.$refs[name].validate(valid => {
           if (valid) {
-            this.$Message.success('Submit')
+            self.sbmtLoading = true
             if(this.selectedData.length>0){
               let finalData = {
                 "virtualShopName":this.formValidate.name,
@@ -368,6 +369,11 @@
     async mounted() {
       let supplier = await vshopdata.getAllSupplier()
       if(supplier === 401) {
+        this.$Message.error({
+          content: 'Can not load data...! Please login again.',
+          duration: 20,
+          closable: true
+        })
         this.$router.push({ path: '/login' })
       } else {
         if(supplier.data.data.length > 0) {
