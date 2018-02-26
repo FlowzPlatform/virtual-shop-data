@@ -34,7 +34,7 @@
               </Checkbox>
             </Col>
             <Col span="19">
-              <Input @on-change="searchProduct" placeholder="Search product..." icon="ios-search"></Input>
+              <Input v-model="searchChar" @on-change="searchData" placeholder="Search product..." icon="ios-search"></Input>
             </Col>
           </Row>
           <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-select="getSelectedProduct" @on-select-all="getSelectedProduct" @on-select-cancel="deselectRow" @on-selection-change="deselectRow"></Table>
@@ -157,14 +157,28 @@
         selectedData: [],
         selectedSupplyerId: '',
         selectedSupplyerName: '',
+        searchChar: '',
         doc_count: 0,
         cacheSupplier: [],
         tempData: [],
         maintainState: {},
-        selectAllState: {}
+        selectAllState: {},
+        pageNo: 1
       }
     },
     methods:{
+      async searchData() {
+        let self = this
+        if (self.searchChar != '') {
+          self.searchProduct = await self.searchProduct.filter(function(el) {
+            if (el._source.product_name.toLowerCase().includes(self.searchChar.toLowerCase())) {
+              return el
+            }
+          })
+        } else {
+          this.searchProduct = await this.makeChunk(self.pageNo, 200)
+        }
+      },
       async selectedAll() {
         let self = this
         if(this.selectAll) {
@@ -212,6 +226,7 @@
         }
       },
       async changePage (pageNo) {
+        self.pageNo = pageNo
         this.searchProduct = await this.makeChunk(pageNo, 200)
       },
       async makeChunk (pageNo, size) {
