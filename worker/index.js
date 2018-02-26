@@ -53,6 +53,7 @@ function getJobQueue () {
     .filter({id: job.data.vId})
     .run().then(function (result) {
       doJob(job, result[0], next)
+    
     })
   })
 }
@@ -61,18 +62,27 @@ async function doJob (objWorkJob, result, next) {
   if (!objWorkJob.data) {
     return false
   }
-  let userData = await getUserRequestResponse(objWorkJob)
-  let getUserNextVersion1 = await getUserNewVersion(ESuserData[objWorkJob.data.vId])
+  let userData = await getUserRequestResponse(objWorkJob).catch(err => {
+    console.log('User Error..', err)
+  })
+  var getUserNextVersion1
+  try {
+    getUserNextVersion1 = await getUserNewVersion(ESuserData[objWorkJob.data.vId])
+  }
+  catch(err) {
+    console.log('Vshop Data Error...', err)
+  }
   let esUpdateArr = []
   for (let i = 0; i < result.suppliers.length; i++) {
     let supplyerName = result.suppliers[i].supplyerName
     let selectedProducts = result.suppliers[i].products
-    for(let j = 0; j < selectedProducts.length; j++) {
+    for(var productKey in selectedProducts) {
+      let productId = Object.keys(selectedProducts[productKey])[0]
       esUpdateArr.push({
         "update": {
           "_index": 'pdm1',
           "_type": 'product',
-          "_id": selectedProducts[j].id
+          "_id": productId
         }
       },
       {
@@ -158,7 +168,7 @@ async function getEsSku(supplyerName,sku){
 
 async function getUserRequestResponse (objWorkJob) {
   let jobData = objWorkJob.data
-  let emailId = jobData.emailId
+  let emailId = jobData.userdetail.emailId
   let vId = jobData.vId
   let userData = await getESUser(vId)
   if (userData && Object.keys(userData).length > 0) {
