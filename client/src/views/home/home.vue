@@ -324,9 +324,11 @@
             if(el.products.length == self.productList.length){
               self.selectAll = true
               self.selectAllState[self.selectedSupplyerId] = true
+              console.log('self.selectAll true', self.selectAll)
             } else {
               self.selectAll = false
               self.selectAllState[self.selectedSupplyerId] = false
+              console.log('self.selectAll false', self.selectAll)
             }
           }
         })
