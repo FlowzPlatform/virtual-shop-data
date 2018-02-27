@@ -4,7 +4,7 @@
 </style>
 <template>
   <div>
-    <Card>
+    <Card style="min-height:750px">
       <Row slot="title" :gutter="16">
         <Col :md="{ span: 10 }">
           <p>Suppliers and Products</p>    
@@ -26,7 +26,7 @@
           <Table :loading="suplayerLoading" :columns="supplyer" :data="supplyerList" :highlight-row="true" @on-row-click="getProducts"></Table>
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
-          <Row>
+          <Row align="top">
             <Col span="5">
               <Checkbox type="text" v-model="selectAll" size="small" @on-change="selectedAll" :disabled="checkIt">
                 <span v-if="!selectAll">Select All</span>
@@ -40,7 +40,7 @@
           <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-select="getSelectedProduct" @on-select-all="getSelectedProduct" @on-select-cancel="deselectRow" @on-selection-change="deselectRow"></Table>
           <div style="margin: 10px;overflow: hidden">
             <div style="float: right;">
-              <Page :total="productList.length" :current="1" @on-change="changePage" :page-size="200" size="small" show-elevator></Page>
+              <Page :total="productList.length" :current="currentPage" @on-change="changePage" :page-size="pageSize" size="small" show-elevator></Page>
             </div>
           </div>          
         </Col>
@@ -55,6 +55,7 @@
   import service from '@/api/service'
   import vshopdata from '@/api/vshopdata'
   import vshopList from '@/api/vshoplist'
+  import Cookie from 'js-cookie'
   import _ from 'lodash'
 
   export default {
@@ -133,7 +134,10 @@
           {
             title: 'Action',
             render: (h, params) => {
-              return h('div', [
+              return h('Tooltip',{  props: {
+                content: 'Delete',
+                placement: 'right'
+              }}, [
                 h('Button', {
                   props: {
                     type: 'text',
@@ -163,7 +167,9 @@
         tempData: [],
         maintainState: {},
         selectAllState: {},
-        pageNo: 1
+        pageNo: 1,
+        currentPage: 1,
+        pageSize: 200
       }
     },
     methods:{
@@ -176,7 +182,7 @@
             }
           })
         } else {
-          this.searchProduct = await this.makeChunk(self.pageNo, 200)
+          this.searchProduct = await this.makeChunk(self.pageNo, self.pageSize)
         }
       },
       async selectedAll() {
@@ -208,7 +214,7 @@
           await _.find(self.productList, (ml) => {
             ml._checked = true
           })
-          self.searchProduct = await self.makeChunk(1, 200)
+          self.searchProduct = await self.makeChunk(self.currentPage, self.pageSize)
         } else {
           this.selectAll = false
           this.selectAllState[this.selectedSupplyerId] = false
@@ -222,12 +228,12 @@
             el._checked = false
           })
           self.maintainState[this.selectedSupplyerId + 'temp'] = self.tempData
-          self.searchProduct = await self.makeChunk(1, 200)
+          self.searchProduct = await self.makeChunk(self.currentPage, self.pageSize)
         }
       },
       async changePage (pageNo) {
         self.pageNo = pageNo
-        this.searchProduct = await this.makeChunk(pageNo, 200)
+        this.searchProduct = await this.makeChunk(pageNo, this.pageSize)
       },
       async makeChunk (pageNo, size) {
         let chunk = []
@@ -306,11 +312,11 @@
             this.productList = productList.data.hits.hits
             this.productLoading = false
           }
-          this.searchProduct = await this.makeChunk(1, 200)
+          this.searchProduct = await this.makeChunk(this.currentPage, this.pageSize)
         } else {
           this.selectedSupplyerId = data.id
           this.selectedSupplyerName = data.key1
-          this.searchProduct = await this.makeChunk(1, 200)
+          this.searchProduct = await this.makeChunk(this.currentPage, this.pageSize)
         }
         if(this.maintainState[data.id] == undefined && this.productList.length > 0) {
           this.maintainState[this.selectedSupplyerId] = this.productList
@@ -368,7 +374,7 @@
               .then(res => {
                 self.$Message.success('Saved successfully!')
                 self.$router.push({
-                  name: 'vshoplist'
+                  name: 'Vshoplist'
                 });
               })
               .catch(err => {
@@ -389,7 +395,11 @@
           duration: 20,
           closable: true
         })
-        this.$router.push({ path: '/login' })
+        Cookie.remove('auth_token')
+        Cookie.remove('access')
+        Cookie.remove('user')
+        document.location = '/'
+        // this.$router.push({ path: '/home' })
       } else {
         if(supplier.data.data.length > 0) {
           for(let i = 0; i < supplier.data.data.length; i++) {

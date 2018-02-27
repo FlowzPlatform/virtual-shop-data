@@ -6,7 +6,7 @@
     <div ref="scrollCon" @DOMMouseScroll="handlescroll" @mousewheel="handlescroll" class="tags-outer-scroll-con">
         <div class="close-all-tag-con">
             <Dropdown transfer @on-click="handleTagsOption">
-                <Button size="small" type="primary">
+                <Button size="small" type="text">
                     Close Tabs
                     <Icon type="arrow-down-b"></Icon>
                 </Button>
