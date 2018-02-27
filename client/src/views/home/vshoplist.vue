@@ -4,7 +4,7 @@
 </style>
 <template>
   <div>
-    <Card>
+    <Card style="min-height:750px">
       <Row slot="title" :gutter="16">
         <Col :md="{ span: 10 }">
           <p>Virtual Shop List</p>    
@@ -12,8 +12,9 @@
       </Row>
       
       <Row :gutter="16">
-        <Col :xs="{ span: 24 }" :md="{ span: 16 }">
+        <Col :xs="{ span: 24 }" :md="{ span: 16 }" push="4">
           <Table :loading="suplayerLoading" :columns="supplyer" :data="supplyerList" :highlight-row="true"></Table>
+          <Page :current="currentPage" @on-change="changePage" :total="supplyerListData.length" :page-size="pageSize" class="pull-right" style="margin-top:10px;"></Page>
         </Col>
       </Row>
     </Card>
@@ -21,7 +22,7 @@
 </template>
 <script>
   import service from '@/api/service'
-  import vshopdata from '@/api/vshopdata'
+  import vshopData from '@/api/vshopdata'
   import vshopList from '@/api/vshoplist'
   import _ from 'lodash'
 
@@ -40,27 +41,88 @@
             },
             {
                 title: 'Status',
+                width:180,
                 key: 'status'
+            },
+            {
+              title: 'Action',
+              width: 150,
+              render: (h, params) => {
+                return h('Tooltip', {
+                  props: {
+                    content: 'Delete',
+                    placement: 'right'
+                  }
+                }, [
+                  h('Button', {
+                    props: {
+                      type: 'text',
+                      size: 'large',
+                      shape: 'circle',
+                      icon: 'trash-a'
+                    },
+                    on: {
+                      click: () => {
+                        this.confirmDelete(params.index)
+                      }
+                    }
+                  })
+                ])
+              }
             }
         ],
         suplayerLoading: true,
-
+        supplyerListData: [],
         supplyerList: [],
+        pageSize: 10,
+        currentPage: 1
       }
     },
     methods:{
-      
+      async changePage (pageNo) {
+        this.supplyerList = await this.makeChunk(pageNo, this.pageSize)
+      },
+      async makeChunk (pageNo, size) {
+        let chunk = []
+        for (let i=(pageNo - 1) * size; i < size + (pageNo - 1) * size; i++) {
+          if(this.supplyerListData[i] != undefined) {
+            await chunk.push(this.supplyerListData[i])
+          }
+        }
+        return chunk.slice()
+      },
+      confirmDelete(index) {
+        let self = this
+        this.$Modal.confirm({
+          title: 'Are you sure want to delete?',
+          content: 'Press OK to confirm delete.',
+          onOk: async function() {
+            vshopData.delete(self.supplyerListData[index].id)
+            let data = await vshopList.getAll()
+            if(data === 401) {
+              self.$router.push({ path: '/login' })
+            } else {
+              self.supplyerListData =  _.sortBy(data.data, [function(o) { return o.virtualShopName.toLowerCase() }])
+              self.supplyerList = await self.makeChunk(self.currentPage, self.pageSize)
+            }
+          }
+        })
+      }
     },
     computed:{
 
     },
     async mounted() {
-
         let data = await vshopList.getAll()
         if(data === 401) {
-            this.$router.push({ path: '/login' })
+          Cookie.remove('auth_token')
+          Cookie.remove('access')
+          Cookie.remove('user')
+          document.location = '/'
+          // this.$router.push({ path: '/login' })
         } else {
-            this.supplyerList = data.data
+            this.supplyerListData = _.sortBy(data.data, [function(o) { return o.virtualShopName.toLowerCase() }])
+            this.supplyerList = await this.makeChunk(this.currentPage, this.pageSize)
             this.suplayerLoading = false
         }
     }

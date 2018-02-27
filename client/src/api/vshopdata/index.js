@@ -6,5 +6,8 @@ export default {
   },
   getAllSupplier: () => {
     return api.request('get', '/' + model + '?userType=supplier')
+  },
+  delete: (id) => {
+    return api.request('delete', '/' + model + '/' + id)
   }
 }

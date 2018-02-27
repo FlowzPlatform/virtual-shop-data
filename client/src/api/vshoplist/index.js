@@ -12,6 +12,6 @@ export default {
     }
   },
   getAll: () => {
-    return api.request('get', '/' + model + '?all=1')
+    return api.request('get', '/' + model + '?all=1&$limit=100')
   }
 }

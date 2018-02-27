@@ -58,12 +58,39 @@ export const otherRouter = {
     component: Main,
     children: [
         { path: 'home', title: 'Dashboard', name: 'Dashboard', component: resolve => { require(['@/views/home/home.vue'], resolve); } },
-        { path: 'vshoplist', title: 'Virtual Shop List', name: 'vshoplist', component: resolve => { require(['@/views/home/vshoplist.vue'], resolve); } }
+        { path: 'vshoplist', title: 'Virtual Shop List', name: 'Vshoplist', component: resolve => { require(['@/views/home/vshoplist.vue'], resolve); } }
     ]
 };
 
 // Main
-export const appRouter = [];
+export const appRouter = [
+      {
+        path: '/',
+        icon: 'monitor',
+        title: 'Dashboard',
+        component: Main,
+        children: [
+            {   path: 'home',
+                name: 'Dashboard',
+                title: 'Dashboard',
+                component: resolve => { require(['@/views/home/home.vue'], resolve); } 
+            }
+        ]
+    },
+    {
+        path: '/',
+        icon: 'android-list',
+        title: 'Vshop List',
+        component: Main,
+        children: [
+            {   path: 'vshoplist', 
+                name: 'Vshoplist', 
+                title: 'Vshoplist',
+                component: resolve => { require(['@/views/home/vshoplist.vue'], resolve); } 
+            }
+        ]
+    }
+];
 
 // 所有上面定义的路由都要写在下面的routers里
 export const routers = [
