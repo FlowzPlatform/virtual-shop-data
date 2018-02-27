@@ -9,8 +9,8 @@ module.exports =  {
     userDetail: "https://auth."+process.env.domainkey+"/api/userdetails",
     forgotPasswordUrl : "https://auth."+process.env.domainkey+"/api/forgetpassword",
     resetpassword : "https://auth."+process.env.domainkey+"/api/resetpassword",
-    feathersServiceBaseUrl : "https://api."+process.env.domainkey+"/pdmnew",    // live api
-    // feathersServiceBaseUrl : "http://localhost:3038",             // local api
+    // feathersServiceBaseUrl : "https://api."+process.env.domainkey+"/pdmnew",    // live api
+    feathersServiceBaseUrl : "http://localhost:3038",             // local api
     varifyEmailUrl : "https://auth."+process.env.domainkey+"/api/verifyemail",
 
     

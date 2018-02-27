@@ -253,7 +253,6 @@ export default {
                     })
                     .then(function(response) {
                         self.emailLoading = false ;
-                        console.log(response)
                         self.saveFileLoadingLogin = false;
                         
                         axios({
@@ -262,14 +261,11 @@ export default {
                             headers: {'Authorization': response.data.logintoken}
                         })
                         .then(function(result) {
-                            console.log(result)
                             let location = psl.parse(window.location.hostname)
                             location = location.domain === null ? location.input : location.domain
                              Cookies.set('user',  result.data.data.email  , {domain: location});
                               Cookies.set('auth_token', response.data.logintoken , {domain: location});
                         
-                            Cookies.set('email', response.data.email  , {domain: location});
-                            Cookies.set('password', '123456');
                             self.$store.commit('setAvator', 'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3448484253,3685836170&fm=27&gp=0.jpg');
                             if (self.form.email === 'iview_admin') {
                                 Cookies.set('access', 0);
@@ -282,7 +278,6 @@ export default {
                         })
                     }).catch(function(error){
                         self.emailLoading = false ;
-                       console.log(error.response)
                        if(error.response.status == 409){
                             self.$message.error(error.response.data)
                         }
@@ -293,7 +288,6 @@ export default {
         },
         forgotPassword(){
              let params = new URLSearchParams(document.location.href);
-        console.log(params)
         let name = params.get("ob_id"); // is the string "Jonathan"
 
         alert(name)
@@ -326,7 +320,6 @@ export default {
         tabsClicked(val) {
             this.login.email = ''
             this.login.password = ''
-            console.log('value is:', val);
             this.selectedTabIndex = val;
         },
         handleLoginSubmit: function() {
@@ -339,7 +332,6 @@ export default {
         loginUser: async function() {
             let self = this;
             let emailValidator = await this.validateEmail(self.login.email);
-            console.log(emailValidator);
 
             if (self.login.email == "") {
                 self.$message.warning("email field is required");
@@ -366,8 +358,6 @@ export default {
                             Cookies.set('user',  result.data.data.email  , {domain: location});
                             Cookies.set('auth_token', response.data.logintoken , {domain: location});
                         
-                            Cookies.set('email', response.data.email , {domain: location}) ;
-                            Cookies.set('password', '123456');
                             self.$store.commit('setAvator', 'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3448484253,3685836170&fm=27&gp=0.jpg');
                             if (self.form.email === 'iview_admin') {
                                 Cookies.set('access', 0);
@@ -381,7 +371,6 @@ export default {
                        
                     })
                     .catch(function(error) {
-                        console.log("error-->", error)
                         self.saveFileLoadingLogin = false;
                         self.$message.error("email or password is incorrect");
                     });
@@ -390,7 +379,6 @@ export default {
           signupUser:async function(){
             let self = this;
            let emailValidator = await this.validateEmail(self.signup.email);
-           console.log(emailValidator)
           if(self.signup.username == ""){
                self.$message.warning("User Name is required");
            }else if(self.signup.email == ""){
@@ -407,7 +395,6 @@ export default {
                 username: self.signup.username.trim()
             })
             .then(function (response) {
-                console.log(response);
                 if(response.data.code == 200){
                     self.saveFileLoading = false;
                     //alert(response.data.message+", please check your email for password")
@@ -431,7 +418,6 @@ export default {
             })
             .catch(function (error) {
                 // this.login.password = ''
-                 console.log(error);
                 self.saveFileLoading = false;
                 //alert(error);
                 self.$message.error("Something went wrong , Please try again later");
@@ -442,7 +428,6 @@ export default {
         forgotPasswordSendEmail: async function() {
             let self = this;
             let emailValidator = await this.validateEmail(self.login.email);
-            console.log(emailValidator);
 
             if (self.login.email == "") {
                 self.$message.warning("email field is required");
@@ -456,14 +441,12 @@ export default {
                     })
                     .then(function(response) {
                         self.saveFileLoadingLogin = false;
-                        console.log(response)
                         if (response.data.code == 200) {
                             self.$message.success(response.data.message);
                             self.login.email = ""
                         }
                     })
                     .catch(function(error) {
-                        console.log("error-->", error)
                         self.saveFileLoadingLogin = false;
                         self.$message.error("email  is incorrect");
 
@@ -483,7 +466,6 @@ export default {
                             headers: {'Authorization': Cookies.get('auth_token')}
                         })
                         .then(function(result) {
-                            console.log(">>>>>>>>>>>>>>>> " , result)
                             let location = psl.parse(window.location.hostname)
                             location = location.domain === null ? location.input : location.domain
                              Cookies.set('user',  result.data.data.email  , {domain: location});
