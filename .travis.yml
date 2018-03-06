@@ -61,10 +61,10 @@ jobs:
             docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
             docker build -t vshopdata_worker:staging ./worker/;
             docker tag vshopdata_worker:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/vshopdata_worker:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
-            docker tag vshopdata_worker:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/vshopdata_worker:dev;
+            docker tag vshopdata_worker:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/vshopdata_worker:staging;
             docker images;
             docker push $DOCKER_USERNAME/vshopdata_worker:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
-            docker push $DOCKER_USERNAME/vshopdata_worker:dev;
+            docker push $DOCKER_USERNAME/vshopdata_worker:staging;
         else
             docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
             docker build -t vshopdata_worker:qa ./worker/;
