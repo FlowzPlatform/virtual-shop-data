@@ -388,6 +388,7 @@
       }
     },
     async mounted() {
+      let self = this
       let supplier = await vshopdata.getAllSupplier()
       if(supplier === 401) {
         this.$Message.error({
@@ -398,8 +399,8 @@
         Cookie.remove('auth_token')
         Cookie.remove('access')
         Cookie.remove('user')
-        document.location = '/'
-        // this.$router.push({ path: '/home' })
+        // document.location = '/'
+        self.$router.push({ name: 'login' })
       } else {
         if(supplier.data.data.length > 0) {
           for(let i = 0; i < supplier.data.data.length; i++) {
