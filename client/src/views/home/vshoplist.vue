@@ -126,6 +126,14 @@
             this.supplyerList = await this.makeChunk(this.currentPage, this.pageSize)
             this.suplayerLoading = false
         }
+    },
+    feathers: {
+      'vshopdata': {
+        updated (message) {
+          let self = this
+          console.log('>>>>>>>>>>>', message)  
+        }
+      }
     }
   }
 </script>
