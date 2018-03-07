@@ -10,7 +10,7 @@ if (process.env.rdbPort !== undefined && process.env.rdbPort !== '') {
 }
 const rethink = require('rethinkdbdash')(cxnOptions)
 const rfqQueue = require('rethinkdb-job-queue')
-let axios = require('axios')
+let rpRequest = require('request-promise')
 let ESuserData = null
 var elasticsearch = require('elasticsearch')
 
@@ -36,8 +36,7 @@ let optionsES = {
 let esUrl = 'https://' + ESConnection.auth + '@' + ESConnection.host + ':' + ESConnection.port
 
 let esClient = new elasticsearch.Client({
-  host: esUrl,
-  log: 'trace'
+  host: esUrl
 })
 
 let queueOption = {
@@ -101,8 +100,10 @@ async function doJob (objWorkJob, result, next) {
     if(esUpdateArr.length > 0) {
       let dumpEsResponse = await dumpToES(esUpdateArr)
       let updateRdbResponse = await updateInRdb(objWorkJob, userData)
+      let vid = Object.keys(userData)
       if(updateRdbResponse) {
-        console.log('Sucessfull..!')
+        console.log('VID ', vid[0], 'Generated Successfully..!')
+        console.log('Email : ', userData[vid[0]].email, 'Username : ', userData[vid[0]].username)
         next(null, 'sucessfull')
       } else {
         console.log('Unsucessfull..!')
@@ -189,19 +190,16 @@ async function getESUser (vId) {
 }
 
 async function makeHttpSRequest (vId) {
-  return new Promise(async (resolve, reject) => {
-    let objOptions = optionsES
-    try {
-      let options = {
-        url: objOptions.tls + objOptions.auth + '@' + objOptions.host + ':' + objOptions.port + '/' + objOptions.path + vId
-      }
-      await axios(options).then((response) => {
+  let objOptions = optionsES
+  return new Promise(function(resolve, reject) {
+      rpRequest(objOptions.tls + objOptions.auth + '@' + objOptions.host + ':' + objOptions.port + '/' + objOptions.path + vId)
+      .then(function(response) {
         resolve(response)
       })
-      .catch((err) => { reject(err) })
-    } catch (error) {
-      reject(error)
-    }
+      .catch(function(error) {
+        let obj = {}
+        resolve(obj)
+      })
   })
 }
 
@@ -236,20 +234,16 @@ async function makeNewUser (objWorkJob) {
 }
 
 async function makeHttpsPostRequest (username, userData) {
-  return new Promise(async (resolve, reject) => {
-    let objOptions = optionsES
-    let reqOptions = {
-      method: 'POST',
-      url: objOptions.tls + objOptions.auth + '@' + objOptions.host + ':' + objOptions.port + '/' + objOptions.path + username,
-      data: userData,
-      headers: {'content-type': 'application/json'}
-    }
-    axios(reqOptions)
-    .then((result) => {
-      resolve(result)
-    })
-    .catch((err) => reject(err))
-  })
+  let objOptions = optionsES
+  let reqOptions = {
+    method: 'POST',
+    uri: objOptions.tls + objOptions.auth + '@' + objOptions.host + ':' + objOptions.port + '/' + objOptions.path + username,
+    body: userData,
+    json: true
+  }
+
+  let response = await rpRequest(reqOptions)
+  return response
 }
 
 getJobQueue()
