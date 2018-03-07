@@ -9,6 +9,7 @@ branches:
   only:
   - master
   - develop
+  - staging
   - QA
 
 jobs:
@@ -27,6 +28,14 @@ jobs:
             docker images;
             docker tag vshopdata_frontend_flowz:dev $DOCKER_USERNAME/vshopdata_frontend_flowz:dev;
             docker push $DOCKER_USERNAME/vshopdata_frontend_flowz:dev;
+        elif [ ${TRAVIS_BRANCH} = "staging" ]; then
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER --build-arg domainkey="$DOMAINKEY_STAGING" --build-arg vId="$vId" ./client/;
+            docker tag vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+            docker tag vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/vshopdata_frontend_flowz:staging;
+            docker images;
+            docker push $DOCKER_USERNAME/vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+            docker push $DOCKER_USERNAME/vshopdata_frontend_flowz:staging;
         else
             docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
             docker build -t vshopdata_frontend_flowz:qa --build-arg domainkey="$DOMAINKEY_QA" --build-arg vId="$vId" ./client/;
@@ -48,6 +57,14 @@ jobs:
             docker images;
             docker tag vshopdata_worker:dev $DOCKER_USERNAME/vshopdata_worker:dev;
             docker push $DOCKER_USERNAME/vshopdata_worker:dev;
+        elif [ ${TRAVIS_BRANCH} = "staging" ]; then
+            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+            docker build -t vshopdata_worker:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER ./worker/;
+            docker tag vshopdata_worker:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/vshopdata_worker:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+            docker tag vshopdata_worker:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/vshopdata_worker:staging;
+            docker images;
+            docker push $DOCKER_USERNAME/vshopdata_worker:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+            docker push $DOCKER_USERNAME/vshopdata_worker:staging;
         else
             docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
             docker build -t vshopdata_worker:qa ./worker/;
