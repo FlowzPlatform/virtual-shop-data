@@ -12,6 +12,8 @@ module.exports =  {
     feathersServiceBaseUrl : "https://api."+process.env.domainkey+"/pdmnew",    // live api
     // feathersServiceBaseUrl : "http://localhost:3038",             // local api
     varifyEmailUrl : "https://auth."+process.env.domainkey+"/api/verifyemail",
+    socketURI: 'wss://ws.' + process.env.domainkey + ':4038',
+    // ws://ws.flowzcluster.tk:4038
 
     
     facebookSuccessCallbackUrl: frontEndUrl,

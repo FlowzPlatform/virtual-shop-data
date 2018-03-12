@@ -9,17 +9,26 @@ import App from './app.vue';
 import 'iview/dist/styles/iview.css';
 import VueI18n from 'vue-i18n';
 import util from '@/libs/util';
-import VueWidgets from 'vue-widgets'
-import 'vue-widgets/dist/styles/vue-widgets.css'
+import VueWidgets from 'vue-widgets';
+import 'vue-widgets/dist/styles/vue-widgets.css';
+const config = require('./config/customConfig.js');
 
-
-
+// import io from 'socket.io-client';
+// import socketio from 'feathers-socketio/client';
+// import Feathers from 'feathers/client';
+// const vueFeathers = require('vue-feathers');
+// const hooks = require('feathers-hooks');
+// const socket = io('wss://ws.flowzcluster.tk:4038', { transports: ['websocket']});
+// const feathers = Feathers()
+//   .configure(socketio(socket))
+//   .configure(hooks())
+  
 Vue.use(VueI18n);
 Vue.use(iView , { locale });
 Vue.use(VueWidgets);
+// Vue.use(vueFeathers, feathers);
 
-
-Vue.use(VueWidgets)
+Vue.use(VueWidgets);
 
 new Vue({
     el: '#app',

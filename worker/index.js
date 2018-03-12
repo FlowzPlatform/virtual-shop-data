@@ -36,8 +36,7 @@ let optionsES = {
 let esUrl = 'https://' + ESConnection.auth + '@' + ESConnection.host + ':' + ESConnection.port
 
 let esClient = new elasticsearch.Client({
-  host: esUrl,
-  log: 'trace'
+  host: esUrl
 })
 
 let queueOption = {
@@ -53,70 +52,73 @@ function getJobQueue () {
     .filter({id: job.data.vId})
     .run().then(function (result) {
       doJob(job, result[0], next)
-    
     })
   })
 }
 
 async function doJob (objWorkJob, result, next) {
-  if (!objWorkJob.data) {
-    return false
-  }
-  let userData = await getUserRequestResponse(objWorkJob).catch(err => {
-    console.log('User Error..', err)
-  })
-  var getUserNextVersion1
-  try {
-    getUserNextVersion1 = await getUserNewVersion(ESuserData[objWorkJob.data.vId])
-  }
-  catch(err) {
-    console.log('Vshop Data Error...', err)
-  }
-  let esUpdateArr = []
-  for (let i = 0; i < result.suppliers.length; i++) {
-    let supplyerName = result.suppliers[i].supplyerName
-    let selectedProducts = result.suppliers[i].products
-    for(var productKey in selectedProducts) {
-      let productId = Object.keys(selectedProducts[productKey])[0]
-      esUpdateArr.push({
-        "update": {
-          "_index": 'pdm1',
-          "_type": 'product',
-          "_id": productId
-        }
-      },
-      {
-        "script": {
-          "inline": "ctx._source.vid.add(params.newVid)",
-          "params" : {
-            "newVid" : getUserNextVersion1
-          },
-          "lang" : "painless"
-        }
-      })
-    }
-  }
-  if(esUpdateArr.length > 0) {
-    let dumpEsResponse = await dumpToES(esUpdateArr)
-    let updateRdbResponse = await updateInRdb(objWorkJob,userData)
-    if(updateRdbResponse){
-      console.log('Sucessfull..!')
-      next(null,"sucessfull")
-    } else {
-      console.log('Unsucessfull..!')
-      next(null,"unsucessfull")
-    }
-  }
 
+    if (!objWorkJob.data) {
+      next({error: 'Job Data not available'})
+    }
+    let userData = await getUserRequestResponse(objWorkJob).catch(err => {
+      console.log('User Error..', err)
+      next(err)
+    })
+    var getUserNextVersion1
+    try {
+      getUserNextVersion1 = await getUserNewVersion(ESuserData[objWorkJob.data.vId])
+    }
+    catch(err) {
+      console.log('Vshop Data Error...', err)
+      next(err)
+    }
+    let esUpdateArr = []
+    for (let i = 0; i < result.suppliers.length; i++) {
+      let supplyerName = result.suppliers[i].supplyerName
+      let selectedProducts = result.suppliers[i].products
+      for(var productKey in selectedProducts) {
+        let productId = Object.keys(selectedProducts[productKey])[0]
+        esUpdateArr.push({
+          "update": {
+            "_index": 'pdm1',
+            "_type": 'product',
+            "_id": productId
+          }
+        },
+        {
+          "script": {
+            "inline": "ctx._source.vid.add(params.newVid)",
+            "params" : {
+              "newVid" : getUserNextVersion1
+            },
+            "lang" : "painless"
+          }
+        })
+      }
+    }
+    if(esUpdateArr.length > 0) {
+      let dumpEsResponse = await dumpToES(esUpdateArr)
+      let updateRdbResponse = await updateInRdb(objWorkJob, userData)
+      let vid = Object.keys(userData)
+      if(updateRdbResponse) {
+        console.log('VID ', vid[0], 'Generated Successfully..!')
+        console.log('Email : ', userData[vid[0]].email, 'Username : ', userData[vid[0]].username)
+        next(null, 'sucessfull')
+      } else {
+        console.log('Unsucessfull..!')
+        next('unsucessfull')
+      }
+    }
 }
 
 async function updateInRdb (objWorkJob, userData) {
   return rethink.table(cxnOptions.vshopData)
     .filter({'id': objWorkJob.data.vId})
     .update({
-      "esUser": userData[objWorkJob.data.vId].username,
-      "password": password,
-      "status": "completed"
+      'esUser': userData[objWorkJob.data.vId].username === undefined ? objWorkJob.data.vId : userData[objWorkJob.data.vId].username,
+      'password': password,
+      'status': 'completed'
     })
     .run()
 }
@@ -137,11 +139,11 @@ async function dumpToES (makeProductJsonObj) {
 }
 
 function getUserNewVersion (ESUser) {
-  let versionNo = 1;
+  let versionNo = 1
   if (ESUser.metadata.user_version_history) {
     versionNo = ESUser.metadata.user_version_history.length + 1
   }
-  return 'dist'+ ESUser.username + '-' + versionNo
+  return 'dist' + ESUser.username + '-' + versionNo
 }
 
 // Unused Function
@@ -189,12 +191,16 @@ async function getESUser (vId) {
 
 async function makeHttpSRequest (vId) {
   let objOptions = optionsES
-  try {
-    let response = await rpRequest( objOptions.tls + objOptions.auth + '@' + objOptions.host + ':' + objOptions.port + '/' + objOptions.path + vId)
-    return response
-  } catch (error) {
-    return {}
-  }
+  return new Promise(function(resolve, reject) {
+      rpRequest(objOptions.tls + objOptions.auth + '@' + objOptions.host + ':' + objOptions.port + '/' + objOptions.path + vId)
+      .then(function(response) {
+        resolve(response)
+      })
+      .catch(function(error) {
+        let obj = {}
+        resolve(obj)
+      })
+  })
 }
 
 async function makeNewUser (objWorkJob) {
@@ -203,7 +209,7 @@ async function makeNewUser (objWorkJob) {
   let username = jobData.userdetail.username
   let vId = jobData.vId
   password = uuidv1();
-  
+
   let userObject = {
     'username': vId,
     'password': password,
@@ -239,6 +245,5 @@ async function makeHttpsPostRequest (username, userData) {
   let response = await rpRequest(reqOptions)
   return response
 }
-
 
 getJobQueue()
