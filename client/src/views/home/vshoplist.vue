@@ -4,15 +4,14 @@
 </style>
 <template>
   <div>
-    <Card style="min-height:750px">
+    <Card style="min-height:650px">
       <Row slot="title" :gutter="16">
         <Col :md="{ span: 10 }">
           <p>Virtual Shop List</p>    
         </Col>
       </Row>
-      
-      <Row :gutter="16">
-        <Col :xs="{ span: 24 }" :md="{ span: 16 }" push="4">
+      <Row type="flex" justify="center">
+        <Col :xs="{ span: 24 }" :md="{ span: 16 }">
           <Table :loading="suplayerLoading" :columns="supplyer" :data="supplyerList" :highlight-row="true"></Table>
           <Page :current="currentPage" @on-change="changePage" :total="supplyerListData.length" :page-size="pageSize" class="pull-right" style="margin-top:10px;"></Page>
         </Col>
@@ -26,6 +25,11 @@
   import vshopList from '@/api/vshoplist'
   import Cookie from 'js-cookie'
   import _ from 'lodash'
+  import config from '@/config/customConfig'
+
+  import io from 'socket.io-client';
+  
+  var socket = io.connect(config.default.socketURI);
 
   export default {
     name: 'vshoplist',
@@ -33,7 +37,7 @@
       return {
         supplyer: [
             {
-                title: 'Id',
+                title: 'Virtual Shop id',
                 key: 'id'
             },
             {
@@ -42,8 +46,10 @@
             },
             {
                 title: 'Status',
-                width:180,
-                key: 'status'
+                key: 'status',
+                render: (h, params) => {
+                  return  h('strong', _.capitalize(params.row.status))
+                }
             },
             {
               title: 'Action',
@@ -114,6 +120,7 @@
 
     },
     async mounted() {
+      let self = this
         let data = await vshopList.getAll()
         if(data === 401) {
           Cookie.remove('auth_token', {domain: location})
@@ -126,14 +133,14 @@
             this.supplyerList = await this.makeChunk(this.currentPage, this.pageSize)
             this.suplayerLoading = false
         }
-    },
-    feathers: {
-      'vshopdata': {
-        updated (message) {
-          let self = this
-          console.log('>>>>>>>>>>>', message)  
-        }
-      }
+        socket.on("update", async function(data) {
+        if (data.new_val && data.new_val !== 'null' && data.new_val !== 'undefined') {
+          let index = await _.findIndex(self.supplyerListData , ['id', data.new_val.id])
+          if (self.supplyerListData[index] !== 'undefined' && self.supplyerListData[index] !== 'null' && self.supplyerListData[index] !== 'undefined') {
+            self.supplyerListData[index].status = data.new_val.status
+            }
+          }
+        });
     }
   }
 </script>
