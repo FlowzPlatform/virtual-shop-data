@@ -164,7 +164,7 @@
             }
         },
         methods: {
-            init () {
+            async init () {
                 let self = this;
                 
                 let pathArr = util.setCurrentPath(this, this.$route.name);
@@ -177,7 +177,8 @@
                 this.messageCount = messageCount.toString();
                 this.checkTag(this.$route.name);
                 this.$store.commit('setMessageCount', 3);
-                setTimeout(function(){ self.userName = Cookies.get('user'); }, 1000);
+                self.userName = await Cookies.get('user');
+                // setTimeout(function(){ self.userName = Cookies.get('user'); }, 2000);
                 
             },
             toggleClick () {
@@ -195,8 +196,11 @@
                     location = location.domain === null ? location.input : location.domain
                     
                     Cookies.remove('auth_token' ,{domain: location}) 
+                    Cookies.remove('access' ,{domain: location})
+                    Cookies.remove('user' ,{domain: location})
                     this.$store.commit('logout', this);
                     this.$store.commit('clearOpenedSubmenu');
+                    this.$Message.success('You have successfully logged out..!')
                     this.$router.push({
                         name: 'login'
                     });

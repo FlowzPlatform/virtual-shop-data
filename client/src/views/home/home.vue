@@ -4,7 +4,7 @@
 </style>
 <template>
   <div>
-    <Card style="min-height:750px">
+    <Card style="min-height:650px">
       <Row slot="title" :gutter="16">
         <Col :md="{ span: 10 }">
           <p>Suppliers and Products</p>    
@@ -12,7 +12,7 @@
         <Col :md="{ span: 12 }">
           <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="80">
             <FormItem label="Name" prop="name">
-              <Input v-model="formValidate.name" placeholder="Enter Data Name"></Input>
+              <Input v-model.trim="formValidate.name" placeholder="Enter Data Name" v-on:keyup.enter="submitData('formValidate')"></Input>
             </FormItem>
           </Form>
         </Col>
@@ -26,22 +26,21 @@
           <Table :loading="suplayerLoading" :columns="supplyer" :data="supplyerList" :highlight-row="true" @on-row-click="getProducts"></Table>
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
-          <Row align="top">
-            <Col span="5">
+          <Row align="top" style="margin-bottom:5px">
+            <Col span="6">
               <Checkbox type="text" v-model="selectAll" size="small" @on-change="selectedAll" :disabled="checkIt">
                 <span v-if="!selectAll">Select All</span>
                 <span v-else>Deselect All</span>
               </Checkbox>
             </Col>
-            <Col span="19">
-              <Input v-model="searchChar" @on-change="searchData" placeholder="Search product..." icon="ios-search"></Input>
+            <Col span="18" style="float: right;">
+              <Input size="small" v-model="searchChar" @on-change="searchData" placeholder="Search product..." icon="ios-search" :disabled="checkIt"></Input>
             </Col>
           </Row>
           <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-select="getSelectedProduct" @on-select-all="getSelectedProduct" @on-select-cancel="deselectRow" @on-selection-change="deselectRow"></Table>
           <div style="margin: 10px;overflow: hidden">
-            <div style="float: right;">
-              <Page :total="productList.length" :current="currentPage" @on-change="changePage" :page-size="pageSize" size="small" show-elevator></Page>
-            </div>
+              <center><p v-if="!checkIt">Showing {{searchProduct.length}} out of {{productList.length}} </p>
+              <Page :total="productList.length" :current="currentPage" @on-change="changePage" :page-size="pageSize" size="small" show-elevator></Page></center>
           </div>          
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
@@ -57,6 +56,7 @@
   import vshopList from '@/api/vshoplist'
   import Cookie from 'js-cookie'
   import _ from 'lodash'
+  import psl from 'psl'
 
   export default {
     name: 'home',
@@ -77,7 +77,7 @@
         supplyer: [
           {
             title: 'Suppliers',
-            key: 'key',
+            key: 'key1',
             render: (h, params) => {
               return h('div', [
                 h('Icon', {
@@ -250,6 +250,14 @@
           title: 'Are you sure want to delete?',
           content: 'Press OK to confirm delete.',
           onOk: async function() {
+            delete self.maintainState[self.selectedData[index].supplyerName]
+            delete self.maintainState[self.selectedData[index].supplyerName + 'temp']
+            self.selectAllState[self.selectedData[index].supplyerName] = false
+            if (self.selectedSupplyerId == self.selectedData[index].supplyerName) {
+              self.selectedSupplyerId = ''
+              let data = await _.find(self.supplyerList, ['id', self.selectedData[index].supplyerName])
+              await self.getProducts(data)
+            }
             self.selectedData.splice(index, 1)
           }
         })
@@ -372,34 +380,51 @@
               }
               vshopdata.add(finalData)
               .then(res => {
-                self.$Message.success('Saved successfully!')
+                self.$Message.success({
+                  content:'Saved successfully..!'
+                })
                 self.$router.push({
                   name: 'Vshoplist'
                 });
               })
               .catch(err => {
-                this.$Message.error('Error : ', err)    
+                this.$Message.error({
+                  content: 'Error : ', err,
+                  duration: 5  
+                })    
               }) 
+            } else {
+              this.$Message.error({
+                content: 'Please select at least one product of any supplier..!',
+                duration: 5
+              })
+              self.sbmtLoading = false
             }
           } else {
-            this.$Message.error('Please fill required fields!')
+            this.$Message.error({
+              content:'Please fill required fields..!',
+              duration: 5
+            })
           }
         })
       }
     },
     async mounted() {
+      let self = this
       let supplier = await vshopdata.getAllSupplier()
       if(supplier === 401) {
         this.$Message.error({
-          content: 'Can not load data...! Please login again.',
+          content: 'Please login again.',
           duration: 20,
           closable: true
         })
-        Cookie.remove('auth_token')
-        Cookie.remove('access')
-        Cookie.remove('user')
-        document.location = '/'
-        // this.$router.push({ path: '/home' })
+        let location = psl.parse(window.location.hostname)
+        location = location.domain === null ? location.input : location.domain
+        Cookie.remove('auth_token', {domain: location})
+        Cookie.remove('access', {domain: location})
+        Cookie.remove('user', {domain: location})
+        // document.location = '/'
+        self.$router.push({ name: 'login' })
       } else {
         if(supplier.data.data.length > 0) {
           for(let i = 0; i < supplier.data.data.length; i++) {
@@ -415,7 +440,7 @@
             }
           }
         }
-        this.supplyerList = supplier.data.data
+        this.supplyerList = _.sortBy(supplier.data.data, [function(o) { return o.key1.toLowerCase() }])
         this.suplayerLoading = false
       }
     },
