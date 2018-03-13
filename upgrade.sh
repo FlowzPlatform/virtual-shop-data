@@ -16,6 +16,9 @@ then
     USERNAME="$DOCKER_USERNAME_FLOWZ";
     TAG="latest";
     FRONT_HOST="$FRONT_HOST_MASTER";
+    ESHOST="$ESHOST_MASTER";
+    ESPORT="$ESPORT_MASTER";
+    ESAUTH="$ESAUTH_MASTER";
     RANCHER_ACCESSKEY="$RANCHER_ACCESSKEY_MASTER";
     RANCHER_SECRETKEY="$RANCHER_SECRETKEY_MASTER";
     RANCHER_URL="$RANCHER_URL_MASTER";
@@ -29,6 +32,9 @@ then
       USERNAME="$DOCKER_USERNAME";
       TAG="dev";
       FRONT_HOST="$FRONT_HOST_DEVELOP";
+      ESHOST="$ESHOST_DEVELOP";
+      ESPORT="$ESPORT_DEVELOP";
+      ESAUTH="$ESAUTH_DEVELOP";
       RANCHER_ACCESSKEY="$RANCHER_ACCESSKEY_DEVELOP";
       RANCHER_SECRETKEY="$RANCHER_SECRETKEY_DEVELOP";
       RANCHER_URL="$RANCHER_URL_DEVELOP";
@@ -42,6 +48,9 @@ then
       USERNAME="$DOCKER_USERNAME";
       TAG="staging";
       FRONT_HOST="$FRONT_HOST_STAGING";
+      ESHOST="$ESHOST_STAGING";
+      ESPORT="$ESPORT_STAGING";
+      ESAUTH="$ESAUTH_STAGING";
       RANCHER_ACCESSKEY="$RANCHER_ACCESSKEY_STAGING";
       RANCHER_SECRETKEY="$RANCHER_SECRETKEY_STAGING";
       RANCHER_URL="$RANCHER_URL_STAGING";
@@ -54,6 +63,9 @@ else
       USERNAME="$DOCKER_USERNAME";
       TAG="qa";
       FRONT_HOST="$FRONT_HOST_QA";
+      ESHOST="$ESHOST_QA";
+      ESPORT="$ESPORT_QA";
+      ESAUTH="$ESAUTH_QA";
       RANCHER_ACCESSKEY="$RANCHER_ACCESSKEY_QA";
       RANCHER_SECRETKEY="$RANCHER_SECRETKEY_QA";
       RANCHER_URL="$RANCHER_URL_QA";
@@ -79,5 +91,5 @@ curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" \
 -H 'Accept: application/json' \
 -H 'Content-Type: application/json' \
 -d '{
-     "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/vshopdata_worker:'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "machine=cluster-flowz"},"environment": {"rdbHost": "'"$rdbHost"'","rdbPort": "'"$rdbPort"'","esHost":"'"$esHost"'","esPort":"'"$esPort"'","esAuth":"'"$esAuth"'"}}},"toServiceStrategy":null}' \
+     "inServiceStrategy":{"launchConfig": {"imageUuid":"docker:'$USERNAME'/vshopdata_worker:'$TAG'","kind": "container","labels":{"io.rancher.container.pull_image": "always","io.rancher.scheduler.affinity:host_label": "machine=cluster-flowz"},"environment": {"rdbHost": "'"$rdbHost"'","rdbPort": "'"$rdbPort"'","esHost":"'"$ESHOST"'","esPort":"'"$ESPORT"'","esAuth":"'"$ESAUTH"'"}}},"toServiceStrategy":null}' \
 $RANCHER_URL/v2-beta/projects/$ENV_ID/services/$SERVICE_ID_WORKER?action=upgrade
