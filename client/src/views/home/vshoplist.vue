@@ -134,10 +134,10 @@
             this.suplayerLoading = false
         }
         socket.on("update", async function(data) {
-        if (data.new_val && data.new_val !== 'null' && data.new_val !== 'undefined') {
-          let index = await _.findIndex(self.supplyerListData , ['id', data.new_val.id])
-          if (self.supplyerListData[index] !== 'undefined' && self.supplyerListData[index] !== 'null' && self.supplyerListData[index] !== 'undefined') {
-            self.supplyerListData[index].status = data.new_val.status
+          if (data.new_val && data.new_val !== 'null' && data.new_val !== 'undefined') {
+            let index = await _.findIndex(self.supplyerListData , ['id', data.new_val.id])
+            if (self.supplyerListData[index] !== 'undefined' && self.supplyerListData[index] !== 'null') {
+              self.supplyerListData[index].status = data.new_val.status
             }
           }
         });

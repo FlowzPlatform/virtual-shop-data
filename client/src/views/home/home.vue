@@ -1,11 +1,15 @@
 <style lang="less">
   @import "./home.less";
   @import "../../styles/common.less";
+  .supp-data  .ivu-table-body {height: 92% !important;}
+  .demo-spin-icon-load{
+      animation: ani-demo-spin 1s linear infinite;
+  }
 </style>
 <template>
   <div>
     <Card style="min-height:650px">
-      <Row slot="title" :gutter="16">
+      <Row slot="title" :gutter="16" style="max-height:25px">
         <Col :md="{ span: 10 }">
           <p>Suppliers and Products</p>    
         </Col>
@@ -23,7 +27,15 @@
       
       <Row :gutter="16">
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
-          <Table :loading="suplayerLoading" :columns="supplyer" :data="supplyerList" :highlight-row="true" @on-row-click="getProducts"></Table>
+          <Table height="530" class="supp-data" :loading="suplayerLoading" :columns="supplyer" :data="supplyerList" :highlight-row="true" @on-row-click="getProducts"></Table>
+          <Row type="flex" align="middle">
+            <Col span="2" v-if="splyrLdng"><Spin v-if="splyrLdng">
+                <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
+            </Spin></Col>
+            <Col span="8">
+              <p>Showing <b>{{supplyerList.length}}</b> Suppliers</p>
+            </Col>
+          </Row>
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
           <Row align="top" style="margin-bottom:5px">
@@ -34,13 +46,17 @@
               </Checkbox>
             </Col>
             <Col span="18" style="float: right;">
-              <Input size="small" v-model="searchChar" @on-change="searchData" placeholder="Search product..." icon="ios-search" :disabled="checkIt"></Input>
+              <Input size="small" v-model="searchChar" @on-change="searchData(null)" placeholder="Search product on this page..." icon="ios-search" :disabled="checkIt">
+                <Tooltip content="Reset" slot="append" placement="top">
+                  <i-button size="small" icon="ios-close-outline" @click="searchData(true)"></i-button>
+                </Tooltip>
+              </Input>
             </Col>
           </Row>
           <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-select="getSelectedProduct" @on-select-all="getSelectedProduct" @on-select-cancel="deselectRow" @on-selection-change="deselectRow"></Table>
           <div style="margin: 10px;overflow: hidden">
-              <center><p v-if="!checkIt">Showing {{searchProduct.length}} out of {{productList.length}} </p>
-              <Page :total="productList.length" :current="currentPage" @on-change="changePage" :page-size="pageSize" size="small" show-elevator></Page></center>
+              <center><p v-if="!checkIt&&searchChar.length <= 0">Showing <b>{{searchProduct.length}}</b> out of <b>{{productList.length}}</b> products</p>
+              <Page v-if="searchChar.length <= 0" :total="productList.length" :current="currentPage" @on-change="changePage" :page-size="pageSize" size="small" show-elevator></Page></center>
           </div>          
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
@@ -57,6 +73,10 @@
   import Cookie from 'js-cookie'
   import _ from 'lodash'
   import psl from 'psl'
+  import config from '@/config/customConfig'
+  import io from 'socket.io-client';
+  
+  var socket = io.connect(config.default.socketURI);
 
   export default {
     name: 'home',
@@ -155,6 +175,7 @@
           }
         ],
         suplayerLoading: true,
+        splyrLdng: false,
         productLoading: false,
         supplyerList: [],
         productList: [],
@@ -173,8 +194,10 @@
       }
     },
     methods:{
-      async searchData() {
+      async searchData(reset) {
         let self = this
+        if(reset)
+          self.searchChar = ''
         if (self.searchChar != '') {
           self.searchProduct = await self.searchProduct.filter(function(el) {
             if (el._source.product_name.toLowerCase().includes(self.searchChar.toLowerCase())) {
@@ -232,7 +255,8 @@
         }
       },
       async changePage (pageNo) {
-        self.pageNo = pageNo
+        this.pageNo = pageNo
+        this.searchChar = ''
         this.searchProduct = await this.makeChunk(pageNo, this.pageSize)
       },
       async makeChunk (pageNo, size) {
@@ -370,8 +394,11 @@
       },
       submitData(name){
         let self = this
-         this.$refs[name].validate(valid => {
-          if (valid) {
+        //  this.$refs[name].validate(valid => {
+        if (this.formValidate.name == "") {
+            self.$message.error("Email field is required");
+        } else {
+          /* if (valid) { */
             self.sbmtLoading = true
             if(this.selectedData.length>0){
               let finalData = {
@@ -394,19 +421,17 @@
                 })    
               }) 
             } else {
-              this.$Message.error({
-                content: 'Please select at least one product of any supplier..!',
-                duration: 5
-              })
+              self.$message.error('Please select at least one product of any supplier..!')
               self.sbmtLoading = false
             }
-          } else {
+          /* } else {
             this.$Message.error({
               content:'Please fill required fields..!',
               duration: 5
             })
-          }
-        })
+          } */
+        }
+        // })
       }
     },
     async mounted() {
@@ -426,23 +451,37 @@
         // document.location = '/'
         self.$router.push({ name: 'login' })
       } else {
-        if(supplier.data.data.length > 0) {
-          for(let i = 0; i < supplier.data.data.length; i++) {
-            let count = await service.countProduct(supplier.data.data[i].id, 1)
-            supplier.data.data[i].doc_count = count.data.hits.total
-            // supplier.data.data[i].key = supplier.data.data[i].esUser
-            if (supplier.data.data[i].company != undefined && supplier.data.data[i].company != '') {
-              supplier.data.data[i].key1 = supplier.data.data[i].company
-            } else if (supplier.data.data[i].virtualShopName != undefined && supplier.data.data[i].virtualShopName != '') {
-              supplier.data.data[i].key1 = supplier.data.data[i].virtualShopName 
-            } else {
-              supplier.data.data[i].key1 = supplier.data.data[i].id 
-            }
+        if(supplier.data.length > 0) {
+          self.splyrLdng = true
+          supplier.data = await _.sortBy(supplier.data, [function(o) { return o.virtualShopName.toLowerCase() }])
+          for(let i = 0; i < supplier.data.length; i++) {
+            let count = await service.countProduct(supplier.data[i].id, 1)
+            supplier.data[i].doc_count = count.data.hits.total
+            supplier.data[i].key1 = supplier.data[i].company || supplier.data[i].virtualShopName || supplier.data[i].id 
+            self.supplyerList.push(supplier.data[i])
+            this.suplayerLoading = false
           }
         }
-        this.supplyerList = _.sortBy(supplier.data.data, [function(o) { return o.key1.toLowerCase() }])
-        this.suplayerLoading = false
+        self.splyrLdng = false
       }
+      socket.on("update", async function(data) {
+        if (data.new_val && data.new_val !== 'null' && data.new_val !== 'undefined') {
+          let count = await service.countProduct(data.new_val.id, 1)
+          data.new_val.doc_count = count.data.hits.total
+          data.new_val.key1 = data.new_val.company || data.new_val.virtualShopName || data.new_val.id
+          let check = await _.find(self.supplyerList, ['id', data.new_val.id])
+          if(check == undefined) {
+            self.supplyerList.push(data.new_val)
+          } else {
+            self.supplyerList.filter(function (o) {
+              if(o.id == data.new_val.id) {
+                self.supplyerList.push(data.new_val)
+                self.supplyerList = _.sortBy(self.supplyerList, [function(o) { return o.virtualShopName.toLowerCase() }])
+              }
+            })
+          }
+        }
+      });
     },
     computed: {
       checkIt: function () {
