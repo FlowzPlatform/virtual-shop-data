@@ -7,13 +7,14 @@ module.exports =  {
     registrationUrl : "https://api."+process.env.domainkey+"/serverapi/register",
     signupUrl: "https://auth."+process.env.domainkey+"/api/setup",
     userDetail: "https://auth."+process.env.domainkey+"/api/userdetails",
-    forgotPasswordUrl : "https://auth."+process.env.domainkey+"/api/forgetpassword",
-    resetpassword : "https://auth."+process.env.domainkey+"/api/resetpassword",
-    feathersServiceBaseUrl : "https://api."+process.env.domainkey+"/pdmnew",    // live api
-    // feathersServiceBaseUrl : "http://localhost:3038",             // local api
+    forgotPasswordUrl : "https://api."+process.env.domainkey+"/auth/api/forgetpassword",
+    resetpassword : "https://api."+process.env.domainkey+"/auth/api/resetpassword",
+    resetPasswordRedirectUrl: "https://www.vshopdata." + process.env.domainkey + "/reset-password",
+    feathersServiceBaseUrl : "https://api."+process.env.domainkey+"/pdmnew",     // live api
+    // feathersServiceBaseUrl : "http://localhost:3038",                        // local api
     varifyEmailUrl : "https://auth."+process.env.domainkey+"/api/verifyemail",
-    socketURI: 'wss://ws.' + process.env.domainkey + ':4038',
-    // ws://ws.flowzcluster.tk:4038
+    socketURI: 'wss://ws.' + process.env.domainkey + ':4038',                    // live socket
+    // socketURI: 'ws://localhost:4038',                                        // local socket
 
     
     facebookSuccessCallbackUrl: frontEndUrl,
