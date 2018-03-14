@@ -80,7 +80,7 @@ export const appRouter = [
     {
         path: '/',
         icon: 'android-list',
-        title: 'Vshop List',
+        title: 'Virtual Shop List',
         component: Main,
         children: [
             {   path: 'vshoplist', 
