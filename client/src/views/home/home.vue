@@ -75,6 +75,9 @@
   import psl from 'psl'
   import config from '@/config/customConfig'
   import io from 'socket.io-client';
+  import Vue from 'vue';
+  import ElementUI from 'element-ui'
+  Vue.use(ElementUI)
   
   var socket = io.connect(config.default.socketURI);
 
@@ -396,7 +399,7 @@
         let self = this
         //  this.$refs[name].validate(valid => {
         if (this.formValidate.name == "") {
-            self.$message.error("Email field is required");
+            self.$message.error("Please enter data name..!");
         } else {
           /* if (valid) { */
             self.sbmtLoading = true
