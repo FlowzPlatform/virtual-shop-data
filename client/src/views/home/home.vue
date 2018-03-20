@@ -9,14 +9,14 @@
 <template>
   <div>
     <Card style="min-height:650px">
-      <Row slot="title" :gutter="16" style="max-height:25px">
+      <Row slot="title" :gutter="12" style="max-height:40px">
         <Col :md="{ span: 10 }">
           <p>Suppliers and Products</p>    
         </Col>
         <Col :md="{ span: 12 }">
-          <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="80">
-            <FormItem label="Name" prop="name">
-              <Input v-model.trim="formValidate.name" placeholder="Enter Data Name" v-on:keyup.enter="submitData('formValidate')"></Input>
+          <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" label-position="right" :label-width="140">
+            <FormItem label="Virtual Shop Name" prop="name">
+              <Input v-model.trim="formValidate.name" placeholder="Enter Virtual Shop Name" v-on:keyup.enter="submitData('formValidate')"></Input>
             </FormItem>
           </Form>
         </Col>
@@ -94,7 +94,7 @@
         },
         ruleValidate: {
           name: [
-            { required: true, message: 'The name cannot be empty', trigger: 'blur' }
+            { required: true, message: 'The VIRTUAL SHOP NAME cannot be empty.', trigger: 'blur' }
           ]
         },
         supplyer: [
@@ -399,7 +399,7 @@
         let self = this
         //  this.$refs[name].validate(valid => {
         if (this.formValidate.name == "") {
-            self.$message.error("Please enter data name..!");
+            self.$message.error("Please enter VIRTUAL SHOP NAME..!");
         } else {
           /* if (valid) { */
             self.sbmtLoading = true
