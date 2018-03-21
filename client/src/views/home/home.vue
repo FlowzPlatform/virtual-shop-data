@@ -94,7 +94,7 @@
         },
         ruleValidate: {
           name: [
-            { required: true, message: 'The VIRTUAL SHOP NAME cannot be empty.', trigger: 'blur' }
+            { required: true, message: 'The Virtual Shop Name Cannot Be Empty.', trigger: 'blur' }
           ]
         },
         supplyer: [
@@ -399,7 +399,7 @@
         let self = this
         //  this.$refs[name].validate(valid => {
         if (this.formValidate.name == "") {
-            self.$message.error("Please enter VIRTUAL SHOP NAME..!");
+            self.$message.error("Please Enter Virtual Shop Name..!");
         } else {
           /* if (valid) { */
             self.sbmtLoading = true
@@ -424,7 +424,7 @@
                 })    
               }) 
             } else {
-              self.$message.error('Please select at least one product of any supplier..!')
+              self.$message.error('Please Select At Least One Product Of Any Supplier..!')
               self.sbmtLoading = false
             }
           /* } else {
