@@ -7,7 +7,7 @@ let util = {
 
 };
 util.title = function (title) {
-    title = title || 'Virtual Shop Data';
+    title = title || 'Flowz Virtual Shop';
     window.document.title = title;
 };
 
