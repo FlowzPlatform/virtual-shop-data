@@ -77,7 +77,7 @@ module.exports = merge(webpackBaseConfig, {
         }),
         new HtmlWebpackPlugin({
             title: 'Flowz Virtual Shop v' + package.version,
-            favicon: 'http://res.cloudinary.com/flowz/raw/upload/v1521729139/flowz-dashboard/favicon.ico',
+            favicon: '../client/favicon.ico',
             filename: '../index.html',
             template: './src/template/index.ejs',
             inject: false
