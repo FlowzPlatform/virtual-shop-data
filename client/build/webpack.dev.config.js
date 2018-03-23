@@ -29,7 +29,7 @@ module.exports = merge(webpackBaseConfig, {
             minChunks: Infinity
         }),
         new HtmlWebpackPlugin({
-            title: 'Virtual Shop Data v' + package.version,
+            title: 'Flowz Virtual Shop v' + package.version,
             filename: '../index.html',
             template: './src/template/index.ejs',
             inject: false
