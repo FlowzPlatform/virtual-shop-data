@@ -109,8 +109,9 @@
             if(data === 401) {
               self.$router.push({ name: 'login' })
             } else {
-              self.supplyerListData =  _.sortBy(data.data, [function(o) { return o.virtualShopName.toLowerCase() }])
-              self.supplyerList = await self.makeChunk(self.currentPage, self.pageSize)
+              location.reload();
+              /* self.supplyerListData =  await _.sortBy(data.data, [function(o) { return o.virtualShopName.toLowerCase() }])
+              self.supplyerList = await self.makeChunk(self.currentPage, self.pageSize) */
             }
           }
         })
@@ -136,7 +137,7 @@
         socket.on("update", async function(data) {
           if (data.new_val && data.new_val !== 'null' && data.new_val !== 'undefined') {
             let index = await _.findIndex(self.supplyerListData , ['id', data.new_val.id])
-            if (self.supplyerListData[index] !== 'undefined' && self.supplyerListData[index] !== 'null') {
+            if (self.supplyerListData[index] !== 'undefined' && self.supplyerListData[index] !== 'null' && self.supplyerListData[index].status !== 'undefined' && data.new_val.status !== 'undefined') {
               self.supplyerListData[index].status = data.new_val.status
             }
           }

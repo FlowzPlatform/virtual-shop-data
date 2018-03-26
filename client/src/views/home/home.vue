@@ -472,7 +472,9 @@ import loginVue from '../login.vue';
       socket.on("update", async function(data) {
         if (data.new_val && data.new_val !== 'null' && data.new_val !== 'undefined') {
           let count = await service.countProduct(data.new_val.id, 1)
-          data.new_val.doc_count = count.data.hits.total
+          if (count.data.hits.total !== 'undefined') {
+            data.new_val.doc_count = count.data.hits.total
+          }
           data.new_val.key1 = data.new_val.company || data.new_val.virtualShopName || data.new_val.id
           let check = await _.find(self.supplyerList, ['id', data.new_val.id])
           if(check == undefined) {
