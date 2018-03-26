@@ -61,6 +61,7 @@
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
           <Table border :columns="selectedProducts" :data="selectedData"></Table>
+          <p v-if="selectedData.length > 0" style="width:50%;display: inline-block;">Total {{ selectedData.length }} Selected Suppliers</p><p v-if="totalProducts > 0" class="pull-right">Total {{ totalProducts }} Selected Products</p>
         </Col>
       </Row>
     </Card>
@@ -77,6 +78,7 @@
   import io from 'socket.io-client';
   import Vue from 'vue';
   import ElementUI from 'element-ui'
+import loginVue from '../login.vue';
   Vue.use(ElementUI)
   
   var socket = io.connect(config.default.socketURI);
@@ -94,7 +96,7 @@
         },
         ruleValidate: {
           name: [
-            { required: true, message: 'The Virtual Shop Name Cannot Be Empty.', trigger: 'blur' }
+            { required: true, message: 'Please Enter Virtual Shop Name.', trigger: 'blur' }
           ]
         },
         supplyer: [
@@ -397,11 +399,11 @@
       },
       submitData(name){
         let self = this
-        //  this.$refs[name].validate(valid => {
-        if (this.formValidate.name == "") {
+         this.$refs[name].validate(valid => {
+        /* if (this.formValidate.name == "") {
             self.$message.error("Please Enter Virtual Shop Name..!");
-        } else {
-          /* if (valid) { */
+        } else { */
+          if (valid) {
             self.sbmtLoading = true
             if(this.selectedData.length>0){
               let finalData = {
@@ -434,7 +436,7 @@
             })
           } */
         }
-        // })
+        })
       }
     },
     async mounted() {
@@ -470,7 +472,9 @@
       socket.on("update", async function(data) {
         if (data.new_val && data.new_val !== 'null' && data.new_val !== 'undefined') {
           let count = await service.countProduct(data.new_val.id, 1)
-          data.new_val.doc_count = count.data.hits.total
+          if (count.data.hits.total !== 'undefined') {
+            data.new_val.doc_count = count.data.hits.total
+          }
           data.new_val.key1 = data.new_val.company || data.new_val.virtualShopName || data.new_val.id
           let check = await _.find(self.supplyerList, ['id', data.new_val.id])
           if(check == undefined) {
@@ -489,6 +493,13 @@
     computed: {
       checkIt: function () {
         return this.productList.length > 0 ? false : true
+      },
+      totalProducts: function () {
+        let total = 0
+        _.filter(this.selectedData, function(count) {
+          total += parseInt(count.products.length)
+        })
+        return total
       }
     }
   }

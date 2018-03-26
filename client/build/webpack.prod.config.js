@@ -58,7 +58,7 @@ module.exports = merge(webpackBaseConfig, {
         new webpack.EnvironmentPlugin(['domainkey','apiURL','vId']),
         new CopyWebpackPlugin([
             {
-                from: 'td_icon.ico'
+                from: 'favicon.ico'
             },
             {
                 from: 'src/styles/fonts',
@@ -76,8 +76,8 @@ module.exports = merge(webpackBaseConfig, {
             ]
         }),
         new HtmlWebpackPlugin({
-            title: 'Virtual Shop Data v' + package.version,
-            favicon: './td_icon.ico',
+            title: 'Flowz Virtual Shop v' + package.version,
+            favicon: './favicon.ico',
             filename: '../index.html',
             template: './src/template/index.ejs',
             inject: false
