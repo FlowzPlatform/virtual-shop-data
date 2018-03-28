@@ -61,7 +61,7 @@
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
           <Table border :columns="selectedProducts" :data="selectedData"></Table>
-          <p v-if="selectedData.length > 0" style="width:50%;display: inline-block;">Total {{ selectedData.length }} Selected Suppliers</p><p v-if="totalProducts > 0" class="pull-right">Total {{ totalProducts }} Selected Products</p>
+          <p v-if="selectedData.length > 0" style="width:50%;display: inline-block;">Total Selected Suppliers : {{ selectedData.length }}</p><p v-if="totalProducts > 0" class="pull-right">Total Selected Products : {{ totalProducts }}</p>
         </Col>
       </Row>
     </Card>
@@ -416,7 +416,7 @@ import loginVue from '../login.vue';
                   content:'Saved successfully..!'
                 })
                 self.$router.push({
-                  name: 'Vshoplist'
+                  name: 'Virtual Shop List'
                 });
               })
               .catch(err => {
