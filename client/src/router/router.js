@@ -58,7 +58,7 @@ export const otherRouter = {
     component: Main,
     children: [
         { path: 'home', title: 'Dashboard', name: 'Dashboard', component: resolve => { require(['@/views/home/home.vue'], resolve); } },
-        { path: 'vshoplist', title: 'Virtual Shop List', name: 'Vshoplist', component: resolve => { require(['@/views/home/vshoplist.vue'], resolve); } }
+        { path: 'vshoplist', title: 'Virtual Shop List', name: 'Virtual Shop List', component: resolve => { require(['@/views/home/vshoplist.vue'], resolve); } }
     ]
 };
 
@@ -84,8 +84,8 @@ export const appRouter = [
         component: Main,
         children: [
             {   path: 'vshoplist', 
-                name: 'Vshoplist', 
-                title: 'Vshoplist',
+                name: 'Virtual Shop List', 
+                title: 'Virtual Shop List',
                 component: resolve => { require(['@/views/home/vshoplist.vue'], resolve); } 
             }
         ]
