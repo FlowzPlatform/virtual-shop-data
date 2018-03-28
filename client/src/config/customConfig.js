@@ -2,7 +2,7 @@ let frontEndUrl = 'http://vshopdata.'+process.env.domainkey+'/#/login';
 
 module.exports =  {
   default : {
-    loginUrl : "https://auth."+process.env.domainkey+"/api/login",
+    loginUrl : "https://api."+process.env.domainkey+"/auth/api/login",
     ldapLoginUrl : "https://auth."+process.env.domainkey+"/api/ldapauth",
     registrationUrl : "https://api."+process.env.domainkey+"/serverapi/register",
     signupUrl: "https://auth."+process.env.domainkey+"/api/setup",
