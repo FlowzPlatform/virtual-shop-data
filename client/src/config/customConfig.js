@@ -17,7 +17,7 @@ module.exports =  {
     socketURI: 'wss://ws.' + process.env.domainkey + ':4038',                    // live socket
     // socketURI: 'ws://localhost:4038',                                        // local socket
 
-    
+
     facebookSuccessCallbackUrl: frontEndUrl,
     googleSuccessCallbackUrl: frontEndUrl,
     twitterSuccessCallbackUrl: frontEndUrl,
@@ -29,7 +29,7 @@ module.exports =  {
     flowzVmailUrl: 'https://www.vmail.' + process.env.domainkey,
     flowzUploaderUrl: 'https://www.uploader.' + process.env.domainkey,
     flowzDbetlUrl: 'https://www.dbetl.' + process.env.domainkey, 
-    
+   
     loginWithFacebookUrl : 'https://auth.'+process.env.domainkey+'/auth/facebook',
     loginWithGoogleUrl : 'https://auth.'+process.env.domainkey+'/auth/google',
     loginWithTwitterUrl : 'https://auth.'+process.env.domainkey+'/auth/twitter',
@@ -46,6 +46,3 @@ module.exports =  {
     usersubscriptionUrl: 'https://api.' + process.env.domainkey + '/subscription/user-subscription'
   }
 }
-
-
-
