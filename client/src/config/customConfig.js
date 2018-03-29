@@ -1,4 +1,4 @@
-let frontEndUrl = 'https://vshopdata.' + process.env.domainkey + '/#/login';
+let frontEndUrl = 'https://www.vshopdata.' + process.env.domainkey + '/#/login';
 
 module.exports =  {
   default : {
@@ -9,7 +9,7 @@ module.exports =  {
     userDetail: "https://api." + process.env.domainkey + "/auth/api/userdetails",
     forgotPasswordUrl : "https://api." + process.env.domainkey + "/auth/api/forgetpassword",
     resetPasswordUrl : "https://api." + process.env.domainkey + "/auth/api/resetpassword",
-    resetPasswordRedirectUrl: "https://vshopdata." + process.env.domainkey + "/#/reset-password",
+    resetPasswordRedirectUrl: "https://www.vshopdata." + process.env.domainkey + "/#/reset-password",
     changepassword: "https://api." + process.env.domainkey + "/auth/api/changepassword",
     feathersServiceBaseUrl : "https://api."+process.env.domainkey+"/pdmnew",     // live api
     // feathersServiceBaseUrl : "http://localhost:3038",                        // local api
