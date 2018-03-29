@@ -6,7 +6,7 @@ module.exports =  {
     ldapLoginUrl : "https://auth."+process.env.domainkey+"/api/ldapauth",
     registrationUrl : "https://api."+process.env.domainkey+"/serverapi/register",
     signupUrl: "https://auth."+process.env.domainkey+"/api/setup",
-    userDetail: "https://auth."+process.env.domainkey+"/api/userdetails",
+    userDetail: "https://api."+process.env.domainkey+"/auth/api/userdetails",
     forgotPasswordUrl : "https://api."+process.env.domainkey+"/auth/api/forgetpassword",
     resetpassword : "https://api."+process.env.domainkey+"/auth/api/resetpassword",
     resetPasswordRedirectUrl: "https://www.vshopdata." + process.env.domainkey + "/reset-password",
@@ -16,7 +16,7 @@ module.exports =  {
     socketURI: 'wss://ws.' + process.env.domainkey + ':4038',                    // live socket
     // socketURI: 'ws://localhost:4038',                                        // local socket
 
-    
+
     facebookSuccessCallbackUrl: frontEndUrl,
     googleSuccessCallbackUrl: frontEndUrl,
     twitterSuccessCallbackUrl: frontEndUrl,
@@ -27,8 +27,8 @@ module.exports =  {
     flowzBuilderUrl : 'https://webbuilder.'+process.env.domainkey ,
     flowzVmailUrl : 'https://vmail.'+process.env.domainkey ,
     flowzUploaderUrl : 'https://uploader.'+process.env.domainkey ,
-    flowzDbetlUrl : 'https://dbetl.'+process.env.domainkey , 
-    
+    flowzDbetlUrl : 'https://dbetl.'+process.env.domainkey ,
+
     loginWithFacebookUrl : 'https://auth.'+process.env.domainkey+'/auth/facebook',
     loginWithGoogleUrl : 'https://auth.'+process.env.domainkey+'/auth/Gplus',
     loginWithTwitterUrl : 'https://auth.'+process.env.domainkey+'/auth/twitter',
@@ -36,6 +36,3 @@ module.exports =  {
     loginWithLinkedInUrl : 'https://auth.'+process.env.domainkey+'/auth/linkedin',
   }
 }
-
-
-
