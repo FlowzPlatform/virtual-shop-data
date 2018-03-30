@@ -5,9 +5,8 @@
 <template>
     
       <div class="mainBody">
-      
+        <vue-particles color="#dedede"></vue-particles>
       <div v-if="!isSocialLogin" class="loginContainer">
-          
          <div class="success">
             <p id="text_mess" v-if="errmsg!=''">{{errmsg}}</p>
          </div>
@@ -27,7 +26,7 @@
                </div>
             </div>
          </div>
-         <form id="form-facebook" name="form-facebook" :action="loginWithFacebookUrl" method="post">
+         <!-- <form id="form-facebook" name="form-facebook" :action="loginWithFacebookUrl" method="post">
             <input type="hidden" name="success_url" :value="facebookSuccessCallbackUrl">
         </form>
         <form id="form-google" name="form-google" :action = "loginWithGoogleUrl" method="post">
@@ -41,6 +40,22 @@
         </form>
         <form id="form-linkedIn" name="form-linkedIn" :action ="loginWithLinkedInUrl" method="post">
             <input type="hidden" name="success_url" :value="linkedInSuccessCallbackUrl">
+        </form>-->
+        <form id="form-google2" name="form-google2" :action="loginWithGoogleUrl" method="get">
+            <input type="hidden" name="success_url" :value="googleSuccessCallbackUrl">
+            <input type="hidden" name="failure_url" :value="googleSuccessCallbackUrl">
+        </form>
+        <form id="form-twitter2" name="form-twitter2" :action ="loginWithTwitterUrl" method="get">
+            <input type="hidden" name="success_url" :value="twitterSuccessCallbackUrl">
+            <input type="hidden" name="failure_url" :value="twitterSuccessCallbackUrl">
+        </form>
+        <form id="form-github2" name="form-github2" :action="loginWithGithubUrl" method="get">
+            <input type="hidden" name="success_url" :value="githubSuccessCallbackUrl">
+            <input type="hidden" name="failure_url" :value="githubSuccessCallbackUrl">
+        </form>
+        <form id="form-linkedIn2" name="form-linkedIn2" :action="loginWithLinkedInUrl" method="get">
+            <input type="hidden" name="success_url" :value="linkedInSuccessCallbackUrl">
+            <input type="hidden" name="failure_url" :value="linkedInSuccessCallbackUrl">
         </form>
          <div class="frontbox">
             <div class="login">
@@ -80,8 +95,8 @@
                      <div class="lrinp">
                         <div class="row">
                            <div class="col-md-6">
-                              <el-button type="success" size="small" v-if="!showForgotPassword" class="signupButton"  @click="loginUser()" :loading="saveFileLoadingLogin" >Login</el-button>
-                              <el-button type="success" size="small" class="signupButton"  v-if="showForgotPassword" @click="forgotPasswordSendEmail()" :loading="saveFileLoadingLogin" >Submit</el-button>
+                              <el-button type="success" size="small" v-if="!showForgotPassword" class="signupButton" @click="loginUser()" :loading="saveFileLoadingLogin" >Login</el-button>
+                              <el-button type="success" size="small"  v-if="showForgotPassword" class="signupButton" @click="forgotPasswordSendEmail()" :loading="saveFileLoadingLogin" >Submit</el-button>
                            </div>
                            <div class="col-md-6" style="top: 9px;">
                               <a href="javascript:void()" class="lfort" v-if="!showForgotPassword"  v-show="this.selectedTabIndex==1" @click="forgotPassword()">Forgot Password</a>
@@ -92,7 +107,7 @@
                   </div>
                   <button type="submit" style="display:none"></button>
                </form>
-               <div class="social">
+               <!-- <div class="social">
                   <span @click="facebookLogin()">
                   <i class="fa fa-facebook-square fa-2x" aria-hidden="true"></i>
                   </span>
@@ -108,19 +123,33 @@
                   <span @click="linkdinLogin()">
                   <i class="fa fa-linkedin-square  fa-2x" aria-hidden="true"></i>
                   </span>
+               </div> -->
+               <div class="social">
+                  <span @click="googleLogin2()">
+                  <i class="fa fa-google-plus-square fa-2x" aria-hidden="true"></i>
+                  </span>
+                  <span @click="twitterLogin2()">
+                  <i class="fa fa-twitter-square fa-2x" aria-hidden="true"></i>
+                  </span>
+                  <span @click="githubLogin2()">
+                  <i class="fa fa-github-square fa-2x" aria-hidden="true"></i>
+                  </span>
+                  <span @click="linkdinLogin2()">
+                  <i class="fa fa-linkedin-square  fa-2x" aria-hidden="true"></i>
+                  </span>
                </div>
             </div>
             <div class="signup hide">
                <h2>Sign Up</h2>
                <div class="inputbox">
-                  <form  v-on:submit.prevent="signupUser" action="#" method="post">
+                  <form  v-on:submit.prevent="signupUser" action="#" method="post" id="signupForm">
                      <div class="lrinp">
                         <label>*Name</label>
                         <!--input type="text" v-model="signup.username" placeholder="Enter username (Required)"-->
                      </div>
                      <div class="lrinp">
-                        <input style="width:48%;display: inline-block;" type="text" required v-model="signup.fname" placeholder="First Name ">    
-                        <input type="text" style="width:50%;display: inline-block;" v-model="signup.lname" placeholder="Last Name ">                                            
+                        <input style="width:49%;display: inline-block;" type="text" v-model="signup.fname" placeholder="First Name ">    
+                        <input style="width:49%;display: inline-block;" type="text" v-model="signup.lname" placeholder="Last Name ">                                            
                      </div>
                      <div class="lrinp">
                         <label>*Email</label>
@@ -133,7 +162,7 @@
                      <button type="submit" style="display:none"></button>
                   </form>
                </div>
-               <el-button style="margin-bottom:10px" type="success" size="medium" class="signupButton"  @click="signupUser()" :loading="saveFileLoadingLogin" >Sign Up</el-button>
+               <el-button type="success" size="medium" class="signupButton" @click="signupUser()" :loading="saveFileLoadingLogin" >Sign Up</el-button>
                <!-- <button @click="signup()">SIGN UP</button> -->
             </div>
          </div>
@@ -213,7 +242,6 @@ export default {
                 email: ""
             },
             selectedTabIndex: 1,
-            showForgotPassword: false,
             facebookSuccessCallbackUrl : config.default.facebookSuccessCallbackUrl,
             googleSuccessCallbackUrl : config.default.googleSuccessCallbackUrl,
             twitterSuccessCallbackUrl: config.default.twitterSuccessCallbackUrl,
@@ -299,7 +327,7 @@ export default {
             this.header = 'Login'
             this.showForgotPassword = false;
         },
-        facebookLogin() {
+        /* facebookLogin() {
             // this.isSocialLogin = true;
              $("#form-facebook").submit() 
         },
@@ -318,8 +346,23 @@ export default {
         linkdinLogin() {
            // this.isSocialLogin = true;
             $("#form-linkedIn").submit();
+        }, */
+       googleLogin2() {
+            ////this.isSocialLogin = true;
+             $("#form-google2").submit();
         },
-       
+        twitterLogin2() {
+           // this.isSocialLogin = true;
+            $("#form-twitter2").submit();
+        },
+        githubLogin2() {
+            //this.isSocialLogin = true;
+            $("#form-github2").submit();
+        },
+        linkdinLogin2() {
+           // this.isSocialLogin = true;
+            $("#form-linkedIn2").submit();
+        },
         tabsClicked(val) {
             this.login.email = ''
             this.login.password = ''
@@ -408,11 +451,12 @@ export default {
                             message : response.data.message,
                             type: 'success'
                         });
-                        self.signup.email = '';
+                        /* self.signup.email = '';
                         self.signup.password = "";
                         self.signup.fname = "";
-                        self.signup.lname = "";
+                        self.signup.lname = ""; */
 
+                        $("#signupForm")[0].reset();
                         $loginMsg.toggleClass("visibility");
                         $frontbox.removeClass("moving");
                         $signupMsg.toggleClass("visibility");
@@ -438,7 +482,6 @@ export default {
         forgotPasswordSendEmail: async function() {
             let self = this;
             let emailValidator = await this.validateEmail(self.login.email);
-
             if (self.login.email == "") {
                 self.$message.warning("Email field is required");
             } else if (emailValidator == false) {
@@ -447,7 +490,7 @@ export default {
                 self.saveFileLoadingLogin = true;
                 axios.post(config.default.forgotPasswordUrl, {
                         email: self.login.email.trim(),
-                        url: config.resetPasswordRedirectUrl
+                        url: config.default.resetPasswordRedirectUrl
                     })
                     .then(function(response) {
                         self.saveFileLoadingLogin = false;
@@ -461,7 +504,7 @@ export default {
                             self.$message.error("Email is not registered..!");
                         } else {
                         } */
-                        self.$message.error("Email is incorrect");
+                        self.$message.error("Sorry, Email is not registered.");
                         self.saveFileLoadingLogin = false;
                     });
             }
@@ -474,14 +517,14 @@ export default {
             let self = this;
             if(Cookies.get('auth_token')){
                 axios({
-                            method: 'post',
+                            method: 'get',
                             url: config.default.userDetail,
                             headers: {'Authorization': Cookies.get('auth_token')}
                         })
                         .then(function(result) {
                             let location = psl.parse(window.location.hostname)
                             location = location.domain === null ? location.input : location.domain
-                             Cookies.set('user',  result.data.data.email  , {domain: location});
+                            Cookies.set('user',  result.data.data.email  , {domain: location});
                              
                               //Cookies.set('auth_token', result.data.logintoken);
                         
@@ -542,11 +585,11 @@ export default {
         }
     },
     mounted() {
-    //   if(Cookies.get("auth_token") != undefined){
-    //     this.$router.push({
-    //                             name: 'Dashboard'
-    //                         });
-    //   }
+     /*  if(Cookies.get("auth_token") != undefined){
+        this.$router.push({
+                                name: 'Dashboard'
+                            });
+      } */
         
         this.init();
         var $loginMsg = $('.loginMsg'),

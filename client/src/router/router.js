@@ -11,6 +11,16 @@ export const loginRouter = {
     component: resolve => { require(['@/views/login.vue'], resolve); }
 };
 
+export const resetPasswordRouter = {
+    path: '/reset-password',
+    name: 'resetpassword',
+    
+    meta: {
+        title: 'Reset Password'
+    },
+    component: resolve => { require(['@/views/reset-password.vue'], resolve); }
+};
+
 export const page404 = {
     path: '/*',
     name: 'error-404',
@@ -95,6 +105,7 @@ export const appRouter = [
 // 所有上面定义的路由都要写在下面的routers里
 export const routers = [
     loginRouter,
+    resetPasswordRouter,
     otherRouter,
     preview,
     locking,
