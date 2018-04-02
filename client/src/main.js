@@ -13,6 +13,9 @@ import VueWidgets from 'vue-widgets';
 import 'vue-widgets/dist/styles/vue-widgets.css';
 const config = require('./config/customConfig.js');
 
+import VueParticles from 'vue-particles'
+Vue.use(VueParticles)
+
 // import io from 'socket.io-client';
 // import socketio from 'feathers-socketio/client';
 // import Feathers from 'feathers/client';
