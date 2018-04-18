@@ -13,7 +13,14 @@
       <Row type="flex" justify="center">
         <Col :xs="{ span: 24 }" :md="{ span: 16 }">
           <Table :loading="suplayerLoading" :columns="supplyer" :data="supplyerList" :highlight-row="true"></Table>
-          <Page :current="currentPage" @on-change="changePage" :total="supplyerListData.length" :page-size="pageSize" class="pull-right" style="margin-top:10px;"></Page>
+          <Row class="pull-right" style="margin-top:10px;" type="flex" >
+            <Col>
+              <p style="margin-right:5px;">Total <b>{{supplyerListData.length}}</b> items</p>
+            </Col>
+            <Col>
+              <Page size="small" v-if="supplyerListData.length >= pageSize" :current="currentPage" @on-change="changePage" :total="supplyerListData.length" :page-size="pageSize"></Page>
+            </Col>
+          </Row>
         </Col>
       </Row>
     </Card>
@@ -26,6 +33,7 @@
   import Cookie from 'js-cookie'
   import _ from 'lodash'
   import config from '@/config/customConfig'
+  import { mapGetters } from 'vuex'
 
   import io from 'socket.io-client';
   
@@ -70,7 +78,7 @@
                     },
                     on: {
                       click: () => {
-                        this.confirmDelete(params.index)
+                        this.confirmDelete(params.row.id)
                       }
                     }
                   })
@@ -91,22 +99,33 @@
       },
       async makeChunk (pageNo, size) {
         let chunk = []
+        let temp = []
+        if(this.$store.state.app.userSubscriptionId != '') {
+          temp = _.filter( this.supplyerListData, ['subscriptionId', this.$store.state.app.userSubscriptionId])
+        } else {
+          temp = this.supplyerListData
+        }
         for (let i=(pageNo - 1) * size; i < size + (pageNo - 1) * size; i++) {
-          if(this.supplyerListData[i] != undefined) {
-            await chunk.push(this.supplyerListData[i])
+          if(temp[i] != undefined) {
+            await chunk.push(temp[i])
           }
         }
         return chunk.slice()
       },
-      confirmDelete(index) {
+      confirmDelete(id) {
         let self = this
         this.$Modal.confirm({
           title: 'Are you sure want to delete?',
           content: 'Press OK to confirm delete.',
           onOk: async function() {
-            vshopData.delete(self.supplyerListData[index].id)
+            vshopData.delete(id)
             let data = await vshopList.getAll()
             if(data === 401) {
+              self.$Message.error({
+                content: 'Your session has been expired please login again.',
+                duration: 20,
+                closable: true
+              })
               self.$router.push({ name: 'login' })
             } else {
               location.reload();
@@ -118,21 +137,57 @@
       }
     },
     computed:{
-
+      ...mapGetters({
+        myState: 'getUserSubscriptionId'
+      })
+    },
+    watch: {
+      myState: async function (userSubscriptionId) {
+        // this.supplyerListData = _.filter( this.supplyerListData, ['subscriptionId', userSubscriptionId])
+        this.supplyerList = await this.makeChunk(this.currentPage, this.pageSize)
+      }
     },
     async mounted() {
       let self = this
         let data = await vshopList.getAll()
-        if(data === 401) {
-          Cookie.remove('auth_token', {domain: location})
-          Cookie.remove('access', {domain: location})
-          Cookie.remove('user', {domain: location})
+        if(data instanceof Error) {
+          if(data.message == 'Network Error') {
+          this.$Notice.error({
+            title: 'Loading virtual shop list',
+            desc: 'API service unavailable.',
+            duration: 10,
+            closable: true
+          })
+        } else if (data.response.data.name == 'GeneralError') {
+          this.$Notice.error({  
+            title: 'Loading virtual shop list',
+            desc: data.response.data.message,
+            duration: 10,
+            closable: true
+          })
+          if(data.response.data.message == 'User authentication fail') {
+            this.$Message.error({
+              content: 'Your session has been expired please login again.',
+              duration: 10,
+              closable: true
+            })
+            let location = psl.parse(window.location.hostname)
+            location = location.domain === null ? location.input : location.domain
+            Cookie.remove('auth_token', {domain: location})
+            Cookie.remove('access', {domain: location})
+            Cookie.remove('user', {domain: location})
+            self.$router.push({ name: 'login' })
+          }
+        }
+          // Cookie.remove('auth_token', {domain: location})
+          // Cookie.remove('access', {domain: location})
+          // Cookie.remove('user', {domain: location})
           // document.location = '/'
-          this.$router.push({ name: 'login' })
+          // this.$router.push({ name: 'login' })
         } else {
-            this.supplyerListData = _.sortBy(data.data, [function(o) { return o.virtualShopName.toLowerCase() }])
-            this.supplyerList = await this.makeChunk(this.currentPage, this.pageSize)
-            this.suplayerLoading = false
+          this.supplyerListData = _.sortBy(data.data, [function(o) { return o.virtualShopName.toLowerCase() }])
+          this.supplyerList = await this.makeChunk(this.currentPage, this.pageSize)
+          this.suplayerLoading = false
         }
         socket.on("update", async function(data) {
           if (data.new_val && data.new_val !== 'null' && data.new_val !== 'undefined') {

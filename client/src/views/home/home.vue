@@ -403,58 +403,87 @@ import loginVue from '../login.vue';
         /* if (this.formValidate.name == "") {
             self.$message.error("Please Enter Virtual Shop Name..!");
         } else { */
-          if (valid) {
-            self.sbmtLoading = true
-            if(this.selectedData.length>0){
-              let finalData = {
-                "virtualShopName":this.formValidate.name,
-                "suppliers":this.selectedData
+            if (valid) {
+              self.sbmtLoading = true
+              if(this.$store.state.app.userSubscriptionId != '') {
+                if(this.selectedData.length>0){
+                  let finalData = {
+                    "virtualShopName":this.formValidate.name,
+                    "suppliers":this.selectedData,
+                    "subscriptionId": this.$store.state.app.userSubscriptionId
+                  }
+                  vshopdata.add(finalData, finalData.subscriptionId).then(res => {
+                    if(res instanceof Error) {
+                      this.$Message.error({
+                        content: res.response.data.message,
+                        duration: 5
+                      })
+                    } else {
+                      self.$Message.success({
+                        content:'Saved successfully..!'
+                      })
+                      self.$router.push({
+                        name: 'Virtual Shop List'
+                      });
+                    }
+                    self.sbmtLoading = false
+                  }).catch(err => {
+                    this.$Message.error({
+                      content: 'Error : ', err,
+                      duration: 5  
+                    })
+                    self.sbmtLoading = false    
+                  })
+                } else {
+                  self.$message.error('Please Select At Least One Product Of Any Supplier..!')
+                  self.sbmtLoading = false
+                }
+              } else {
+                self.$message.error('Please Select Subscription..!')
+                self.sbmtLoading = false
               }
-              vshopdata.add(finalData)
-              .then(res => {
-                self.$Message.success({
-                  content:'Saved successfully..!'
-                })
-                self.$router.push({
-                  name: 'Virtual Shop List'
-                });
+            /* } else {
+              this.$Message.error({
+                content:'Please fill required fields..!',
+                duration: 5
               })
-              .catch(err => {
-                this.$Message.error({
-                  content: 'Error : ', err,
-                  duration: 5  
-                })    
-              }) 
-            } else {
-              self.$message.error('Please Select At Least One Product Of Any Supplier..!')
-              self.sbmtLoading = false
-            }
-          /* } else {
-            this.$Message.error({
-              content:'Please fill required fields..!',
-              duration: 5
-            })
-          } */
-        }
+            } */
+          }
         })
       }
     },
     async mounted() {
       let self = this
       let supplier = await vshopdata.getAllSupplier()
-      if(supplier === 401) {
-        this.$Message.error({
-          content: 'Please login again.',
-          duration: 20,
-          closable: true
-        })
-        let location = psl.parse(window.location.hostname)
-        location = location.domain === null ? location.input : location.domain
-        Cookie.remove('auth_token', {domain: location})
-        Cookie.remove('access', {domain: location})
-        Cookie.remove('user', {domain: location})
-        // document.location = '/'
-        self.$router.push({ name: 'login' })
+      if(supplier instanceof Error) {
+        if(supplier.message == 'Network Error') {
+          this.$Notice.error({
+            title: 'Loading supplier data',
+            desc: 'API service unavailable.',
+            duration: 10,
+            closable: true
+          })
+        } else if (supplier.response.data.name == 'GeneralError'){
+          this.$Notice.error({  
+            title: 'Loading supplier data',
+            desc: supplier.response.data.message,
+            duration: 10,
+            closable: true
+          })
+          if(supplier.response.data.message == 'User authentication fail') {
+            this.$Message.error({
+              content: 'Your session has been expired please login again.',
+              duration: 10,
+              closable: true
+            })
+            let location = psl.parse(window.location.hostname)
+            location = location.domain === null ? location.input : location.domain
+            Cookie.remove('auth_token', {domain: location})
+            Cookie.remove('access', {domain: location})
+            Cookie.remove('user', {domain: location})
+            self.$router.push({ name: 'login' })
+          }
+        }
       } else {
         if(supplier.data.length > 0) {
           self.splyrLdng = true

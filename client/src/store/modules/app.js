@@ -9,6 +9,7 @@ const app = {
         lang: '',
         isFullScreen: false,
         openedSubmenuArr: [], // 要展开的菜单数组
+        userSubscriptionId: '',
         menuTheme: 'dark', // 主题
         themeColor: '',
         pageOpenedList: [{
@@ -186,6 +187,14 @@ const app = {
             }
             state.pageOpenedList.push(tagObj);
             localStorage.pageOpenedList = JSON.stringify(state.pageOpenedList);
+        },
+        setUserSubscriptionId(state, id) {
+            state.userSubscriptionId = id
+        }
+    },
+    getters: {
+        getUserSubscriptionId: state => {
+            return state.userSubscriptionId
         }
     }
 };

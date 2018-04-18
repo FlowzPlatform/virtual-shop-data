@@ -30,6 +30,24 @@
                     <div class="main-breadcrumb">
                         <breadcrumb-nav :currentPath="currentPath"></breadcrumb-nav>
                     </div>
+                     <div style="float:right;margin-top:-26px;">
+                        <el-select size="small" style="width: 240px;" @change="getSelectedUserSub()" clearable no-data-text="No user found" v-model="userSubName" placeholder="Select User">
+                            <el-option
+                            v-for="item in totalUser"
+                            :key="item.user"
+                            :label="item.user"
+                            :value="item.user">
+                            </el-option>
+                        </el-select>
+                         <el-select size="small" style="width: 240px;" @change="saveSelectedSubId()" clearable no-data-text="No Subscription Found" v-model="userSubId" placeholder="Select Subscription">
+                            <el-option
+                            v-for="item in userSubscription"
+                            :key="item.user"
+                            :label="item.package.name"
+                            :value="item.package.id">
+                            </el-option>
+                        </el-select>
+                    </div>
                 </div>
                 <div class="header-avator-con">
                     <!-- <div class="headerMenu">
@@ -113,6 +131,12 @@
     import util from '@/libs/util.js';
     import psl from 'psl';
     import config from '@/config/customConfig'
+    import ElementUI from 'element-ui';
+    import axios from 'axios';
+    import _ from 'lodash';
+    import Vue from 'vue';
+    Vue.use(ElementUI);
+
     export default {
         
         components: {
@@ -126,8 +150,13 @@
         },
         data () {
             return {
+                userSubId: '',
+                userSubName: '',
                 shrink: false,
                 userName: '',
+                subscribedUser: [],
+                userSubscription: [],
+                totalUser: [],
                 isFullScreen: false,
                 openedSubmenuArr: this.$store.state.app.openedSubmenuArr,
                 flowzDashboardUrl : config.default.flowzDashboardUrl,
@@ -251,6 +280,29 @@
             },
             goToFlowzDbetl (){
                 window.open(this.flowzDbetlUrl, '_blank');
+            },
+            getUserDetailsByEmail(email) {
+                return axios({
+                    method:'post',
+                    url: config.default.userDetailByMail,
+                    data: { 'email': email }
+                }).then(res => {
+                    return res.data.data[0].firstname + ' ' + res.data.data[0].lastname
+                }).catch(err => {
+                    return err
+                })
+            },
+            getSelectedUserSub() {
+                if (this.userSubName == '') {
+                    this.userSubscription = this.subscribedUser
+                } else {
+                    this.userSubId = ''
+                    this.userSubscription = _.filter( this.subscribedUser, ['user', this.userSubName])
+                    this.$store.commit('setUserSubscriptionId', this.userSubId)
+                }
+            },
+            saveSelectedSubId() {
+                this.$store.commit('setUserSubscriptionId', this.userSubId)
             }
         },
         watch: {
@@ -268,11 +320,57 @@
             }
         },
         mounted () {
-            
+            let self = this;
             this.init();
+            axios({
+                method: 'get',
+                url: config.default.userDetail,
+                headers: {
+                    'Authorization': Cookies.get('auth_token')
+                }
+            }).then(async res => {
+                let user = res.data.data.firstname + ' ' + res.data.data.lastname
+                await Object.keys(res.data.data.package).forEach(async function(key) {
+                    if(res.data.data.package[key].hasOwnProperty('invitedBy')) {
+                        let inviter = await self.getUserDetailsByEmail(res.data.data.package[key].invitedBy)
+                        if( inviter == 'undefined undefined') {
+                            user = res.data.data.package[key].invitedBy
+                        } else {
+                            user = inviter
+                        }
+                    }
+                    if(user == 'undefined undefined') {
+                        user = res.data.data.email
+                    }
+                    self.totalUser.push({'user': user})
+                    self.subscribedUser.push({'user': user, 'package': { 'name': res.data.data.package[key].name, 'id': key }})
+                })
+                self.userSubscription = self.subscribedUser
+                self.totalUser = _.uniqBy(self.totalUser, 'user')
+            }).catch(err => {
+                if(err.response.status == '401') {
+                    self.$Message.error({
+                        content: 'Your session has been expired please login again.',
+                        duration: 10,
+                        closable: true
+                    })
+                    let location = psl.parse(window.location.hostname)
+                    location = location.domain === null ? location.input : location.domain
+                    Cookies.remove('auth_token', {domain: location})
+                    Cookies.remove('access', {domain: location})
+                    Cookies.remove('user', {domain: location})
+                    self.$router.push({ name: 'login' })
+                } else if (err.message == 'Network Error') {
+                    self.$Notice.error({
+                        title: 'Getting subscription details.',
+                        desc: 'API service unavailable.',
+                        duration: 10,
+                        closable: true
+                    })
+                }
+            })
         },
         created () {
-
             this.$store.commit('setOpenedList');
         }
     };

@@ -7,6 +7,7 @@ module.exports =  {
     registrationUrl : "https://api." + process.env.domainkey + "/auth/serverapi/register",
     signupUrl: "https://api." + process.env.domainkey + "/auth/api/setup",
     userDetail: "https://api." + process.env.domainkey + "/auth/api/userdetails",
+    userDetailByMail: "https://api." + process.env.domainkey + "/auth/api/userdetailsbyemail",
     forgotPasswordUrl : "https://api." + process.env.domainkey + "/auth/api/forgetpassword",
     resetPasswordUrl : "https://api." + process.env.domainkey + "/auth/api/resetpassword",
     resetPasswordRedirectUrl: "https://www.vshopdata." + process.env.domainkey + "/#/reset-password",
@@ -42,7 +43,6 @@ module.exports =  {
     // loginWithGithubUrl : 'https://auth.'+process.env.domainkey+'/auth/github',
     // loginWithLinkedInUrl : 'https://auth.'+process.env.domainkey+'/auth/linkedin',
 
-    subscriptionUrl: 'https://api.' + process.env.domainkey + '/subscription/',
-    usersubscriptionUrl: 'https://api.' + process.env.domainkey + '/subscription/user-subscription'
+    subscriptionUrl: 'https://api.' + process.env.domainkey + '/subscription/'
   }
 }
