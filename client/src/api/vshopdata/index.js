@@ -1,8 +1,8 @@
 import api from '../../api'
 let model = 'vshopdata'
 export default {
-  add: (data) => {
-  	return api.request('post', '/' + model, data)
+  add: (data, userSubscriptionId) => {
+  	return api.request('post', '/' + model, data, null, userSubscriptionId)
   },
   getAllSupplier: () => {
     return api.request('get', '/' + model + '?userType=supplier&$paginate=false')

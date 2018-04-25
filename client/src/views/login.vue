@@ -418,7 +418,7 @@ export default {
                 })
                 .catch(function(error) {
                     self.saveFileLoadingLogin = false;
-                    self.$message.error("email or password is incorrect");
+                    self.$message.error(error.response.data);
                 });
             }
         },
@@ -504,7 +504,7 @@ export default {
                             self.$message.error("Email is not registered..!");
                         } else {
                         } */
-                        self.$message.error("Sorry, Email is not registered.");
+                        self.$message.error(error.response.data);
                         self.saveFileLoadingLogin = false;
                     });
             }
