@@ -15,7 +15,7 @@
           <Table :loading="suplayerLoading" :columns="supplyer" :data="supplyerList" :highlight-row="true"></Table>
           <Row class="pull-right" style="margin-top:10px;" type="flex" >
             <Col>
-              <p style="margin-right:5px;">Total <b>{{supplyerListData.length}}</b> items</p>
+              <p style="margin-right:5px;">Total <b>{{supplyerList.length}}</b> items</p>
             </Col>
             <Col>
               <Page size="small" v-if="supplyerListData.length >= pageSize" :current="currentPage" @on-change="changePage" :total="supplyerListData.length" :page-size="pageSize"></Page>
