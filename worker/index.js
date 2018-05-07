@@ -30,6 +30,12 @@ if (process.env.esPort !== undefined && process.env.esPort !== '') {
 if (process.env.esAuth !== undefined && process.env.esAuth !== '') {
   ESConnection.auth = process.env.esAuth
 }
+
+let pdmIndex = 'pdm1'
+if (process.env.pdmIndex !== undefined && process.env.pdmIndex !== '') {
+  pdmIndex = process.env.pdmIndex
+}
+
 let password
 let optionsES = {
   tls: 'https://',
@@ -92,7 +98,7 @@ async function doJob (objWorkJob, result, next) {
         let productId = Object.keys(selectedProducts[productKey])[0]
         esUpdateArr.push({
           "update": {
-            "_index": 'pdm1',
+            "_index": pdmIndex,
             "_type": 'product',
             "_id": productId
           }
@@ -172,7 +178,7 @@ async function getEsSku(supplyerName,sku){
     }
   }
   let response = await esClient.search({
-    index:  'pdm1',
+    index:  pdmIndex,
     type:  'product',
     body: body
   })
