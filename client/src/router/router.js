@@ -11,6 +11,16 @@ export const loginRouter = {
     component: resolve => { require(['@/views/login.vue'], resolve); }
 };
 
+export const resetPasswordRouter = {
+    path: '/reset-password',
+    name: 'resetpassword',
+    
+    meta: {
+        title: 'Reset Password'
+    },
+    component: resolve => { require(['@/views/reset-password.vue'], resolve); }
+};
+
 export const page404 = {
     path: '/*',
     name: 'error-404',
@@ -58,7 +68,7 @@ export const otherRouter = {
     component: Main,
     children: [
         { path: 'home', title: 'Dashboard', name: 'Dashboard', component: resolve => { require(['@/views/home/home.vue'], resolve); } },
-        { path: 'vshoplist', title: 'Virtual Shop List', name: 'Vshoplist', component: resolve => { require(['@/views/home/vshoplist.vue'], resolve); } }
+        { path: 'vshoplist', title: 'Virtual Shop List', name: 'Virtual Shop List', component: resolve => { require(['@/views/home/vshoplist.vue'], resolve); } }
     ]
 };
 
@@ -80,12 +90,12 @@ export const appRouter = [
     {
         path: '/',
         icon: 'android-list',
-        title: 'Vshop List',
+        title: 'Virtual Shop List',
         component: Main,
         children: [
             {   path: 'vshoplist', 
-                name: 'Vshoplist', 
-                title: 'Vshoplist',
+                name: 'Virtual Shop List', 
+                title: 'Virtual Shop List',
                 component: resolve => { require(['@/views/home/vshoplist.vue'], resolve); } 
             }
         ]
@@ -95,6 +105,7 @@ export const appRouter = [
 // 所有上面定义的路由都要写在下面的routers里
 export const routers = [
     loginRouter,
+    resetPasswordRouter,
     otherRouter,
     preview,
     locking,

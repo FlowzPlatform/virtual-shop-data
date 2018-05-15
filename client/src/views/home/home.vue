@@ -1,18 +1,22 @@
 <style lang="less">
   @import "./home.less";
   @import "../../styles/common.less";
+  .supp-data  .ivu-table-body {height: 92% !important;}
+  .demo-spin-icon-load{
+      animation: ani-demo-spin 1s linear infinite;
+  }
 </style>
 <template>
   <div>
-    <Card style="min-height:750px">
-      <Row slot="title" :gutter="16">
+    <Card style="min-height:650px">
+      <Row slot="title" :gutter="12" style="max-height:40px">
         <Col :md="{ span: 10 }">
           <p>Suppliers and Products</p>    
         </Col>
         <Col :md="{ span: 12 }">
-          <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="80">
-            <FormItem label="Name" prop="name">
-              <Input v-model="formValidate.name" placeholder="Enter Data Name"></Input>
+          <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" label-position="right" :label-width="140">
+            <FormItem label="Virtual Shop Name" prop="name">
+              <Input v-model.trim="formValidate.name" placeholder="Enter Virtual Shop Name" v-on:keyup.enter="submitData('formValidate')"></Input>
             </FormItem>
           </Form>
         </Col>
@@ -23,29 +27,41 @@
       
       <Row :gutter="16">
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
-          <Table :loading="suplayerLoading" :columns="supplyer" :data="supplyerList" :highlight-row="true" @on-row-click="getProducts"></Table>
+          <Table height="530" class="supp-data" :loading="suplayerLoading" :columns="supplyer" :data="supplyerList" :highlight-row="true" @on-row-click="getProducts"></Table>
+          <Row type="flex" align="middle">
+            <Col span="2" v-if="splyrLdng"><Spin v-if="splyrLdng">
+                <Icon type="load-c" size=18 class="demo-spin-icon-load"></Icon>
+            </Spin></Col>
+            <Col span="8">
+              <p>Showing <b>{{supplyerList.length}}</b> Suppliers</p>
+            </Col>
+          </Row>
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
-          <Row align="top">
-            <Col span="5">
+          <Row align="top" style="margin-bottom:5px">
+            <Col span="6">
               <Checkbox type="text" v-model="selectAll" size="small" @on-change="selectedAll" :disabled="checkIt">
                 <span v-if="!selectAll">Select All</span>
                 <span v-else>Deselect All</span>
               </Checkbox>
             </Col>
-            <Col span="19">
-              <Input v-model="searchChar" @on-change="searchData" placeholder="Search product..." icon="ios-search"></Input>
+            <Col span="18" style="float: right;">
+              <Input size="small" v-model="searchChar" @on-change="searchData(null)" placeholder="Search product on this page..." icon="ios-search" :disabled="checkIt">
+                <Tooltip content="Reset" slot="append" placement="top">
+                  <i-button size="small" icon="ios-close-outline" @click="searchData(true)"></i-button>
+                </Tooltip>
+              </Input>
             </Col>
           </Row>
           <Table height="500" border ref="selection" :loading="productLoading" :columns="product" :data="searchProduct" @on-select="getSelectedProduct" @on-select-all="getSelectedProduct" @on-select-cancel="deselectRow" @on-selection-change="deselectRow"></Table>
           <div style="margin: 10px;overflow: hidden">
-            <div style="float: right;">
-              <Page :total="productList.length" :current="currentPage" @on-change="changePage" :page-size="pageSize" size="small" show-elevator></Page>
-            </div>
+              <center><p v-if="!checkIt&&searchChar.length <= 0">Showing <b>{{searchProduct.length}}</b> out of <b>{{productList.length}}</b> products</p>
+              <Page v-if="searchChar.length <= 0" :total="productList.length" :current="currentPage" @on-change="changePage" :page-size="pageSize" size="small" show-elevator></Page></center>
           </div>          
         </Col>
         <Col :xs="{ span: 24 }" :md="{ span: 8 }">
           <Table border :columns="selectedProducts" :data="selectedData"></Table>
+          <p v-if="selectedData.length > 0" style="width:50%;display: inline-block;">Total Selected Suppliers : {{ selectedData.length }}</p><p v-if="totalProducts > 0" class="pull-right">Total Selected Products : {{ totalProducts }}</p>
         </Col>
       </Row>
     </Card>
@@ -57,6 +73,15 @@
   import vshopList from '@/api/vshoplist'
   import Cookie from 'js-cookie'
   import _ from 'lodash'
+  import psl from 'psl'
+  import config from '@/config/customConfig'
+  import io from 'socket.io-client';
+  import Vue from 'vue';
+  import ElementUI from 'element-ui'
+import loginVue from '../login.vue';
+  Vue.use(ElementUI)
+  
+  var socket = io.connect(config.default.socketURI);
 
   export default {
     name: 'home',
@@ -71,13 +96,13 @@
         },
         ruleValidate: {
           name: [
-            { required: true, message: 'The name cannot be empty', trigger: 'blur' }
+            { required: true, message: 'Please Enter Virtual Shop Name.', trigger: 'blur' }
           ]
         },
         supplyer: [
           {
             title: 'Suppliers',
-            key: 'key',
+            key: 'key1',
             render: (h, params) => {
               return h('div', [
                 h('Icon', {
@@ -155,6 +180,7 @@
           }
         ],
         suplayerLoading: true,
+        splyrLdng: false,
         productLoading: false,
         supplyerList: [],
         productList: [],
@@ -173,8 +199,10 @@
       }
     },
     methods:{
-      async searchData() {
+      async searchData(reset) {
         let self = this
+        if(reset)
+          self.searchChar = ''
         if (self.searchChar != '') {
           self.searchProduct = await self.searchProduct.filter(function(el) {
             if (el._source.product_name.toLowerCase().includes(self.searchChar.toLowerCase())) {
@@ -232,7 +260,8 @@
         }
       },
       async changePage (pageNo) {
-        self.pageNo = pageNo
+        this.pageNo = pageNo
+        this.searchChar = ''
         this.searchProduct = await this.makeChunk(pageNo, this.pageSize)
       },
       async makeChunk (pageNo, size) {
@@ -250,6 +279,14 @@
           title: 'Are you sure want to delete?',
           content: 'Press OK to confirm delete.',
           onOk: async function() {
+            delete self.maintainState[self.selectedData[index].supplyerName]
+            delete self.maintainState[self.selectedData[index].supplyerName + 'temp']
+            self.selectAllState[self.selectedData[index].supplyerName] = false
+            if (self.selectedSupplyerId == self.selectedData[index].supplyerName) {
+              self.selectedSupplyerId = ''
+              let data = await _.find(self.supplyerList, ['id', self.selectedData[index].supplyerName])
+              await self.getProducts(data)
+            }
             self.selectedData.splice(index, 1)
           }
         })
@@ -363,6 +400,9 @@
       submitData(name){
         let self = this
          this.$refs[name].validate(valid => {
+        /* if (this.formValidate.name == "") {
+            self.$message.error("Please Enter Virtual Shop Name..!");
+        } else { */
           if (valid) {
             self.sbmtLoading = true
             if(this.selectedData.length>0){
@@ -372,56 +412,94 @@
               }
               vshopdata.add(finalData)
               .then(res => {
-                self.$Message.success('Saved successfully!')
+                self.$Message.success({
+                  content:'Saved successfully..!'
+                })
                 self.$router.push({
-                  name: 'Vshoplist'
+                  name: 'Virtual Shop List'
                 });
               })
               .catch(err => {
-                this.$Message.error('Error : ', err)    
+                this.$Message.error({
+                  content: 'Error : ', err,
+                  duration: 5  
+                })    
               }) 
+            } else {
+              self.$message.error('Please Select At Least One Product Of Any Supplier..!')
+              self.sbmtLoading = false
             }
-          } else {
-            this.$Message.error('Please fill required fields!')
-          }
+          /* } else {
+            this.$Message.error({
+              content:'Please fill required fields..!',
+              duration: 5
+            })
+          } */
+        }
         })
       }
     },
     async mounted() {
+      let self = this
       let supplier = await vshopdata.getAllSupplier()
       if(supplier === 401) {
         this.$Message.error({
-          content: 'Can not load data...! Please login again.',
+          content: 'Please login again.',
           duration: 20,
           closable: true
         })
-        Cookie.remove('auth_token')
-        Cookie.remove('access')
-        Cookie.remove('user')
-        document.location = '/'
-        // this.$router.push({ path: '/home' })
+        let location = psl.parse(window.location.hostname)
+        location = location.domain === null ? location.input : location.domain
+        Cookie.remove('auth_token', {domain: location})
+        Cookie.remove('access', {domain: location})
+        Cookie.remove('user', {domain: location})
+        // document.location = '/'
+        self.$router.push({ name: 'login' })
       } else {
-        if(supplier.data.data.length > 0) {
-          for(let i = 0; i < supplier.data.data.length; i++) {
-            let count = await service.countProduct(supplier.data.data[i].id, 1)
-            supplier.data.data[i].doc_count = count.data.hits.total
-            // supplier.data.data[i].key = supplier.data.data[i].esUser
-            if (supplier.data.data[i].company != undefined && supplier.data.data[i].company != '') {
-              supplier.data.data[i].key1 = supplier.data.data[i].company
-            } else if (supplier.data.data[i].virtualShopName != undefined && supplier.data.data[i].virtualShopName != '') {
-              supplier.data.data[i].key1 = supplier.data.data[i].virtualShopName 
-            } else {
-              supplier.data.data[i].key1 = supplier.data.data[i].id 
-            }
+        if(supplier.data.length > 0) {
+          self.splyrLdng = true
+          supplier.data = await _.sortBy(supplier.data, [function(o) { return o.virtualShopName.toLowerCase() }])
+          for(let i = 0; i < supplier.data.length; i++) {
+            let count = await service.countProduct(supplier.data[i].id, 1)
+            supplier.data[i].doc_count = count.data.hits.total
+            supplier.data[i].key1 = supplier.data[i].company || supplier.data[i].virtualShopName || supplier.data[i].id 
+            self.supplyerList.push(supplier.data[i])
+            this.suplayerLoading = false
           }
         }
-        this.supplyerList = supplier.data.data
-        this.suplayerLoading = false
+        self.splyrLdng = false
       }
+      socket.on("update", async function(data) {
+        if (data.new_val && data.new_val !== 'null' && data.new_val !== 'undefined') {
+          let count = await service.countProduct(data.new_val.id, 1)
+          if (count.data.hits.total !== 'undefined') {
+            data.new_val.doc_count = count.data.hits.total
+          }
+          data.new_val.key1 = data.new_val.company || data.new_val.virtualShopName || data.new_val.id
+          let check = await _.find(self.supplyerList, ['id', data.new_val.id])
+          if(check == undefined) {
+            self.supplyerList.push(data.new_val)
+          } else {
+            self.supplyerList.filter(function (o) {
+              if(o.id == data.new_val.id) {
+                self.supplyerList.push(data.new_val)
+                self.supplyerList = _.sortBy(self.supplyerList, [function(o) { return o.virtualShopName.toLowerCase() }])
+              }
+            })
+          }
+        }
+      });
     },
     computed: {
       checkIt: function () {
         return this.productList.length > 0 ? false : true
+      },
+      totalProducts: function () {
+        let total = 0
+        _.filter(this.selectedData, function(count) {
+          total += parseInt(count.products.length)
+        })
+        return total
       }
     }
   }

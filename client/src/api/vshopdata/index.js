@@ -5,7 +5,7 @@ export default {
   	return api.request('post', '/' + model, data)
   },
   getAllSupplier: () => {
-    return api.request('get', '/' + model + '?userType=supplier')
+    return api.request('get', '/' + model + '?userType=supplier&$paginate=false')
   },
   delete: (id) => {
     return api.request('delete', '/' + model + '/' + id)

@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const cleanWebpackPlugin = require('clean-webpack-plugin');
-const UglifyJsParallelPlugin = require('webpack-uglify-parallel');
+// const UglifyJsParallelPlugin = require('webpack-uglify-parallel');
 const merge = require('webpack-merge');
 const webpackBaseConfig = require('./webpack.base.config.js');
 const os = require('os');
@@ -46,7 +46,7 @@ module.exports = merge(webpackBaseConfig, {
         //         warnings: false
         //     }
         // }),
-        new UglifyJsParallelPlugin({
+        /* new UglifyJsParallelPlugin({
             workers: os.cpus().length,
             mangle: true,
             compressor: {
@@ -54,11 +54,11 @@ module.exports = merge(webpackBaseConfig, {
               drop_console: true,
               drop_debugger: true
              }
-        }),
+        }), */
         new webpack.EnvironmentPlugin(['domainkey','apiURL','vId']),
         new CopyWebpackPlugin([
             {
-                from: 'td_icon.ico'
+                from: 'favicon.ico'
             },
             {
                 from: 'src/styles/fonts',
@@ -76,8 +76,8 @@ module.exports = merge(webpackBaseConfig, {
             ]
         }),
         new HtmlWebpackPlugin({
-            title: 'Virtual Shop Data v' + package.version,
-            favicon: './td_icon.ico',
+            title: 'Flowz Virtual Shop v' + package.version,
+            favicon: './favicon.ico',
             filename: '../index.html',
             template: './src/template/index.ejs',
             inject: false
