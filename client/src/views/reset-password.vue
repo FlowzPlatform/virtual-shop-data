@@ -31,59 +31,59 @@
 import axios from 'axios'
 import config from '../config/customConfig'
 export default {
-    name: 'reset-password',
-    data () {
-        const validatePassCheck = (rule, value, callback) => {
-            if (value === '') {
-                callback(new Error('Please enter confirm password!'));
-            } else if (value !== this.formValidate.newPassword) {
-                callback(new Error('The entered new and confirm password does not match!'));
-            } else {
-                callback();
-            }
-        };
-        return {
-            saveFileLoadingLogin : false,
-            formValidate: {
-                newPassword: '',
-                confirmPassword: ''
-            },
-            ruleValidate: {
-                newPassword: [
-                    { required: true, message: 'Please enter NewPassword', trigger: 'blur' }
-                ],
-                confirmPassword: [
-                    { required: true, validator: validatePassCheck, trigger: 'blur' }
-                ]
-            }
-        }
-    },
-  methods: {
-    handleSubmit (name) {
-        let self = this;
-        this.$refs[name].validate((valid) => {
-            if (valid) {
-                // let url = new URL(window.location.href);
-                let forgetToken = self.$route.query.forget_token
-                axios.post(config.default.resetPasswordUrl, {
-                    new_password: self.formValidate.newPassword.trim(),
-                    token: forgetToken
-                })
-                .then(function (response) {
-                    self.$Message.success(response.data.message);
-                    self.$router.push({
-                        name: 'login'
-                    });
-                })
-                .catch(function (error) {
-                    self.$Message.error(error.response.data);
-                });
-            } else {
-                this.$Message.error('Please enter correct inputs');
-            }
-        })
-    }
-  }
+	name: 'reset-password',
+	data () {
+		const validatePassCheck = (rule, value, callback) => {
+			if (value === '') {
+				callback(new Error('Please enter confirm password!'))
+			} else if (value !== this.formValidate.newPassword) {
+				callback(new Error('The entered new and confirm password does not match!'))
+			} else {
+				callback()
+			}
+		}
+		return {
+			saveFileLoadingLogin: false,
+			formValidate: {
+				newPassword: '',
+				confirmPassword: ''
+			},
+			ruleValidate: {
+				newPassword: [
+					{ required: true, message: 'Please enter NewPassword', trigger: 'blur' }
+				],
+				confirmPassword: [
+					{ required: true, validator: validatePassCheck, trigger: 'blur' }
+				]
+			}
+		}
+	},
+	methods: {
+		handleSubmit (name) {
+			let self = this
+			this.$refs[name].validate((valid) => {
+				if (valid) {
+					// let url = new URL(window.location.href);
+					let forgetToken = self.$route.query.forget_token
+					axios.post(config.default.resetPasswordUrl, {
+						new_password: self.formValidate.newPassword.trim(),
+						token: forgetToken
+					})
+						.then(function (response) {
+							self.$Message.success(response.data.message)
+							self.$router.push({
+								name: 'login'
+							})
+						})
+						.catch(function (error) {
+							self.$Message.error(error.response.data)
+						})
+				} else {
+					this.$Message.error('Please enter correct inputs')
+				}
+			})
+		}
+	}
 }
 </script>
 

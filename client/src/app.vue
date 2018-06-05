@@ -6,21 +6,21 @@
 
 <script>
     export default {
-        data () {
-            return {
-                theme: this.$store.state.app.themeColor
-            };
-        },
-        mounted () {
+    	data () {
+    		return {
+    			theme: this.$store.state.app.themeColor
+    		}
+	},
+    	mounted () {
 
-        },
-        beforeDestroy () {
+    	},
+    	beforeDestroy () {
 
-        },
-        methods: {
+    	},
+    	methods: {
 
-        }
-    };
+    	}
+    }
 </script>
 
 <style>

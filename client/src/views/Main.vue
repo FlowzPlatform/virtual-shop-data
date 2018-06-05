@@ -1,7 +1,5 @@
 <style lang="less">
     @import "./main.less";
-
-     
 </style>
 <template>
     <div class="main" :class="{'main-hide-text': shrink}">
@@ -120,258 +118,255 @@
     </div>
 </template>
 <script>
-    import shrinkableMenu from './main-components/shrinkable-menu/shrinkable-menu.vue';
-    import tagsPageOpened from './main-components/tags-page-opened.vue';
-    import breadcrumbNav from './main-components/breadcrumb-nav.vue';
-    import fullScreen from './main-components/fullscreen.vue';
-/*     import lockScreen from './main-components/lockscreen/lockscreen.vue';*/
-    import messageTip from './main-components/message-tip.vue';
-    import themeSwitch from './main-components/theme-switch/theme-switch.vue';
-    import Cookies from 'js-cookie';
-    import util from '@/libs/util.js';
-    import psl from 'psl';
-    import config from '@/config/customConfig'
-    import ElementUI from 'element-ui';
-    import axios from 'axios';
-    import _ from 'lodash';
-    import Vue from 'vue';
-    Vue.use(ElementUI);
+    import shrinkableMenu from './main-components/shrinkable-menu/shrinkable-menu.vue'
+import tagsPageOpened from './main-components/tags-page-opened.vue'
+import breadcrumbNav from './main-components/breadcrumb-nav.vue'
+import fullScreen from './main-components/fullscreen.vue'
+/*     import lockScreen from './main-components/lockscreen/lockscreen.vue'; */
+import messageTip from './main-components/message-tip.vue'
+import themeSwitch from './main-components/theme-switch/theme-switch.vue'
+import Cookies from 'js-cookie'
+import util from '@/libs/util.js'
+import psl from 'psl'
+import config from '@/config/customConfig'
+    import ElementUI from 'element-ui'
+import axios from 'axios'
+import _ from 'lodash'
+import Vue from 'vue'
+Vue.use(ElementUI)
 
-    export default {
-        
-        components: {
-            shrinkableMenu,
-            tagsPageOpened,
-            breadcrumbNav,
-            fullScreen,
-            /* lockScreen, */
-            messageTip,
-            themeSwitch
-        },
-        data () {
-            return {
-                userSubId: '',
-                userSubName: '',
-                shrink: false,
-                userName: '',
-                subscribedUser: [],
-                userSubscription: [],
-                totalUser: [],
-                isFullScreen: false,
-                openedSubmenuArr: this.$store.state.app.openedSubmenuArr,
-                flowzDashboardUrl : config.default.flowzDashboardUrl,
-                flowzBuilderUrl : config.default.flowzBuilderUrl ,
-                flowzVmailUrl : config.default.flowzVmailUrl ,
-                flowzUploaderUrl : config.default.flowzUploaderUrl ,
-                flowzDbetlUrl : config.default.flowzDbetlUrl 
-            };
-        },
-        computed: {
-            menuList () {
-                return this.$store.state.app.menuList;
-            },
-            pageTagsList () {
-                return this.$store.state.app.pageOpenedList; // 打开的页面的页面对象
-            },
-            currentPath () {
-                return this.$store.state.app.currentPath; // 当前面包屑数组
-            },
-            avatorPath () {
-                return localStorage.avatorImgPath;
-            },
-            cachePage () {
-                return this.$store.state.app.cachePage;
-            },
-            lang () {
-                return this.$store.state.app.lang;
-            },
-            menuTheme () {
-                return this.$store.state.app.menuTheme;
-            },
-            mesCount () {
-                return this.$store.state.app.messageCount;
-            }
-        },
-        methods: {
-            async init () {
-                let self = this;
-                
-                let pathArr = util.setCurrentPath(this, this.$route.name);
-                this.$store.commit('updateMenulist');
-                if (pathArr.length >= 2) {
-                    this.$store.commit('addOpenSubmenu', pathArr[1].name);
-                }
-                
-                let messageCount = 3;
-                this.messageCount = messageCount.toString();
-                this.checkTag(this.$route.name);
-                this.$store.commit('setMessageCount', 3);
-                self.userName = await Cookies.get('user');
-                // setTimeout(function(){ self.userName = Cookies.get('user'); }, 2000);
-                
-            },
-            toggleClick () {
-                this.shrink = !this.shrink;
-            },
-            handleClickUserDropdown (name) {
-                if (name === 'ownSpace') {
-                    util.openNewPage(this, 'ownspace_index');
-                    this.$router.push({
-                        name: 'ownspace_index'
-                    });
-                } else if (name === 'loginout') {
-                    // 退出登录
-                    let location = psl.parse(window.location.hostname)
-                    location = location.domain === null ? location.input : location.domain
-                    
-                    Cookies.remove('auth_token' ,{domain: location}) 
-                    Cookies.remove('access' ,{domain: location})
-                    Cookies.remove('user' ,{domain: location})
-                    this.$store.commit('logout', this);
-                    this.$store.commit('clearOpenedSubmenu');
-                    this.$Message.success('You have successfully logged out..!')
-                    this.$router.push({
-                        name: 'login'
-                    });
-                }
-            },
-            checkTag (name) {
-                let openpageHasTag = this.pageTagsList.some(item => {
-                    if (item.name === name) {
-                        return true;
-                    }
-                });
-                if (!openpageHasTag) { //  解决关闭当前标签后再点击回退按钮会退到当前页时没有标签的问题
-                    util.openNewPage(this, name, this.$route.params || {}, this.$route.query || {});
-                }
-            },
-            handleSubmenuChange (val) {
-                // console.log(val)
-            },
-            beforePush (name) {
-                // if (name === 'accesstest_index') {
-                //     return false;
-                // } else {
-                //     return true;
-                // }
-                return true;
-            },
-            fullscreenChange (isFullScreen) {
-                // console.log(isFullScreen);
-            },
-            goToSettings () {
-               this.$router.push({
-                        name: 'settings'
-                    });
-            },
-            goToFlowzDashboard (){
-                
-                window.open(this.flowzDashboardUrl, '_blank');
-            },
-            goToFlowzBuilder (){
-                
-                window.open(this.flowzBuilderUrl, '_blank');
-            },
-            goToFlowzVmail() {
-                window.open(this.flowzVmailUrl, '_blank');
-            },
-            goToFlowzUploader (){
-                window.open(this.flowzUploaderUrl, '_blank');
-            },
-            goToFlowzDbetl (){
-                window.open(this.flowzDbetlUrl, '_blank');
-            },
-            getUserDetailsByEmail(email) {
-                return axios({
-                    method:'post',
-                    url: config.default.userDetailByMail,
-                    data: { 'email': email }
-                }).then(res => {
-                    return res.data.data[0].firstname + ' ' + res.data.data[0].lastname
-                }).catch(err => {
-                    return err
-                })
-            },
-            getSelectedUserSub() {
-                if (this.userSubName == '') {
-                    this.userSubscription = this.subscribedUser
-                } else {
-                    this.userSubId = ''
-                    this.userSubscription = _.filter( this.subscribedUser, ['user', this.userSubName])
-                    this.$store.commit('setUserSubscriptionId', this.userSubId)
-                }
-            },
-            saveSelectedSubId() {
-                this.$store.commit('setUserSubscriptionId', this.userSubId)
-            }
-        },
-        watch: {
-            '$route' (to) {
-                this.$store.commit('setCurrentPageName', to.name);
-                let pathArr = util.setCurrentPath(this, to.name);
-                if (pathArr.length > 2) {
-                    this.$store.commit('addOpenSubmenu', pathArr[1].name);
-                }
-                this.checkTag(to.name);
-                localStorage.currentPageName = to.name;
-            },
-            lang () {
-                util.setCurrentPath(this, this.$route.name); // 在切换语言时用于刷新面包屑
-            }
-        },
-        mounted () {
-            let self = this;
-            this.init();
-            axios({
-                method: 'get',
-                url: config.default.userDetail,
-                headers: {
-                    'Authorization': Cookies.get('auth_token')
-                }
-            }).then(async res => {
-                let user = res.data.data.firstname + ' ' + res.data.data.lastname
-                await Object.keys(res.data.data.package).forEach(async function(key) {
-                    if(res.data.data.package[key].hasOwnProperty('invitedBy')) {
-                        let inviter = await self.getUserDetailsByEmail(res.data.data.package[key].invitedBy)
-                        if( inviter == 'undefined undefined') {
-                            user = res.data.data.package[key].invitedBy
-                        } else {
-                            user = inviter
-                        }
-                    }
-                    if(user == 'undefined undefined') {
-                        user = res.data.data.email
-                    }
-                    self.totalUser.push({'user': user})
-                    self.subscribedUser.push({'user': user, 'package': { 'name': res.data.data.package[key].name, 'id': key }})
-                })
-                self.userSubscription = self.subscribedUser
-                self.totalUser = _.uniqBy(self.totalUser, 'user')
-            }).catch(err => {
-                if(err.response.status == '401') {
-                    self.$Message.error({
-                        content: 'Your session has been expired please login again.',
-                        duration: 10,
-                        closable: true
-                    })
-                    let location = psl.parse(window.location.hostname)
-                    location = location.domain === null ? location.input : location.domain
-                    Cookies.remove('auth_token', {domain: location})
-                    Cookies.remove('access', {domain: location})
-                    Cookies.remove('user', {domain: location})
-                    self.$router.push({ name: 'login' })
-                } else if (err.message == 'Network Error') {
-                    self.$Notice.error({
-                        title: 'Getting subscription details.',
-                        desc: 'API service unavailable.',
-                        duration: 10,
-                        closable: true
-                    })
-                }
-            })
-        },
-        created () {
-            this.$store.commit('setOpenedList');
-        }
-    };
+export default {
+    
+    	components: {
+    		shrinkableMenu,
+    		tagsPageOpened,
+    		breadcrumbNav,
+    		fullScreen,
+    		/* lockScreen, */
+    		messageTip,
+    		themeSwitch
+    	},
+    	data () {
+    		return {
+    			userSubId: '',
+    			userSubName: '',
+    			shrink: false,
+    			userName: '',
+    			subscribedUser: [],
+    			userSubscription: [],
+    			totalUser: [],
+    			isFullScreen: false,
+    			openedSubmenuArr: this.$store.state.app.openedSubmenuArr,
+    			flowzDashboardUrl: config.default.flowzDashboardUrl,
+    			flowzBuilderUrl: config.default.flowzBuilderUrl,
+    			flowzVmailUrl: config.default.flowzVmailUrl,
+    			flowzUploaderUrl: config.default.flowzUploaderUrl,
+    			flowzDbetlUrl: config.default.flowzDbetlUrl
+    		}
+	},
+    	computed: {
+    		menuList () {
+    			return this.$store.state.app.menuList
+    		},
+    		pageTagsList () {
+    			return this.$store.state.app.pageOpenedList // 打开的页面的页面对象
+    		},
+    		currentPath () {
+    			return this.$store.state.app.currentPath // 当前面包屑数组
+    		},
+    		avatorPath () {
+    			return localStorage.avatorImgPath
+    		},
+    		cachePage () {
+    			return this.$store.state.app.cachePage
+    		},
+    		lang () {
+    			return this.$store.state.app.lang
+    		},
+    		menuTheme () {
+    			return this.$store.state.app.menuTheme
+    		},
+    		mesCount () {
+    			return this.$store.state.app.messageCount
+    		}
+    	},
+    	methods: {
+    		async init () {
+    			let self = this
+    
+    			let pathArr = util.setCurrentPath(this, this.$route.name)
+    			this.$store.commit('updateMenulist')
+    			if (pathArr.length >= 2) {
+    				this.$store.commit('addOpenSubmenu', pathArr[1].name)
+    			}
+    
+    			let messageCount = 3
+    			this.messageCount = messageCount.toString()
+    			this.checkTag(this.$route.name)
+    			this.$store.commit('setMessageCount', 3)
+    			self.userName = await Cookies.get('user')
+    			// setTimeout(function(){ self.userName = Cookies.get('user'); }, 2000);
+    		},
+    		toggleClick () {
+    			this.shrink = !this.shrink
+    		},
+    		handleClickUserDropdown (name) {
+    			if (name === 'ownSpace') {
+    				util.openNewPage(this, 'ownspace_index')
+    				this.$router.push({
+    					name: 'ownspace_index'
+    				})
+    			} else if (name === 'loginout') {
+    				// 退出登录
+    				let location = psl.parse(window.location.hostname)
+    				location = location.domain === null ? location.input : location.domain
+    
+    				Cookies.remove('auth_token', {domain: location})
+    				Cookies.remove('access', {domain: location})
+    				Cookies.remove('user', {domain: location})
+    				this.$store.commit('logout', this)
+    				this.$store.commit('clearOpenedSubmenu')
+    				this.$Message.success('You have successfully logged out..!')
+    				this.$router.push({
+    					name: 'login'
+    				})
+    			}
+    		},
+    		checkTag (name) {
+    			let openpageHasTag = this.pageTagsList.some(item => {
+    				if (item.name === name) {
+    					return true
+    				}
+    			})
+    			if (!openpageHasTag) { //  解决关闭当前标签后再点击回退按钮会退到当前页时没有标签的问题
+    				util.openNewPage(this, name, this.$route.params || {}, this.$route.query || {})
+    			}
+    		},
+    		handleSubmenuChange (val) {
+    			// console.log(val)
+    		},
+    		beforePush (name) {
+    			// if (name === 'accesstest_index') {
+    			//     return false;
+    			// } else {
+    			//     return true;
+    			// }
+    			return true
+    		},
+    		fullscreenChange (isFullScreen) {
+    			// console.log(isFullScreen);
+    		},
+    		goToSettings () {
+    			this.$router.push({
+    				name: 'settings'
+    			})
+    		},
+    		goToFlowzDashboard () {
+    			window.open(this.flowzDashboardUrl, '_blank')
+    		},
+    		goToFlowzBuilder () {
+    			window.open(this.flowzBuilderUrl, '_blank')
+    		},
+    		goToFlowzVmail () {
+    			window.open(this.flowzVmailUrl, '_blank')
+    		},
+    		goToFlowzUploader () {
+    			window.open(this.flowzUploaderUrl, '_blank')
+    		},
+    		goToFlowzDbetl () {
+    			window.open(this.flowzDbetlUrl, '_blank')
+    		},
+    		getUserDetailsByEmail (email) {
+    			return axios({
+    				method: 'post',
+    				url: config.default.userDetailByMail,
+    				data: { 'email': email }
+    			}).then(res => {
+    				return res.data.data[0].firstname + ' ' + res.data.data[0].lastname
+    			}).catch(err => {
+    				return err
+    			})
+    		},
+    		getSelectedUserSub () {
+    			if (this.userSubName == '') {
+    				this.userSubscription = this.subscribedUser
+    			} else {
+    				this.userSubId = ''
+    				this.userSubscription = _.filter(this.subscribedUser, ['user', this.userSubName])
+    				this.$store.commit('setUserSubscriptionId', this.userSubId)
+    			}
+    		},
+    		saveSelectedSubId () {
+    			this.$store.commit('setUserSubscriptionId', this.userSubId)
+    		}
+    	},
+    	watch: {
+    		'$route' (to) {
+    			this.$store.commit('setCurrentPageName', to.name)
+    			let pathArr = util.setCurrentPath(this, to.name)
+    			if (pathArr.length > 2) {
+    				this.$store.commit('addOpenSubmenu', pathArr[1].name)
+    			}
+    			this.checkTag(to.name)
+    			localStorage.currentPageName = to.name
+    		},
+    		lang () {
+    			util.setCurrentPath(this, this.$route.name) // 在切换语言时用于刷新面包屑
+    		}
+    	},
+    	mounted () {
+    		let self = this
+    		this.init()
+    		axios({
+    			method: 'get',
+    			url: config.default.userDetail,
+    			headers: {
+    				'Authorization': Cookies.get('auth_token')
+    			}
+    		}).then(async res => {
+    			let user = res.data.data.firstname + ' ' + res.data.data.lastname
+    			await Object.keys(res.data.data.package).forEach(async function (key) {
+    				if (res.data.data.package[key].hasOwnProperty('invitedBy')) {
+    					let inviter = await self.getUserDetailsByEmail(res.data.data.package[key].invitedBy)
+    					if (inviter == 'undefined undefined') {
+    						user = res.data.data.package[key].invitedBy
+    					} else {
+    						user = inviter
+    					}
+    				}
+    				if (user == 'undefined undefined') {
+    					user = res.data.data.email
+    				}
+    				self.totalUser.push({'user': user})
+    				self.subscribedUser.push({'user': user, 'package': { 'name': res.data.data.package[key].name, 'id': key }})
+    			})
+    			self.userSubscription = self.subscribedUser
+    			self.totalUser = _.uniqBy(self.totalUser, 'user')
+    		}).catch(err => {
+    			if (err.response.status == '401') {
+    				self.$Message.error({
+    					content: 'Your session has been expired please login again.',
+    					duration: 10,
+    					closable: true
+    				})
+    				let location = psl.parse(window.location.hostname)
+    				location = location.domain === null ? location.input : location.domain
+    				Cookies.remove('auth_token', {domain: location})
+    				Cookies.remove('access', {domain: location})
+    				Cookies.remove('user', {domain: location})
+    				self.$router.push({ name: 'login' })
+    			} else if (err.message == 'Network Error') {
+    				self.$Notice.error({
+    					title: 'Getting subscription details.',
+    					desc: 'API service unavailable.',
+    					duration: 10,
+    					closable: true
+    				})
+    			}
+    		})
+    	},
+    	created () {
+    		this.$store.commit('setOpenedList')
+    	}
+    }
 </script>
