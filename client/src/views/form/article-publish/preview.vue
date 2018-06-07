@@ -83,21 +83,21 @@
 
 <script>
 export default {
-    data () {
-        return {
-            articleTitle: '',
-            tagsList: '',
-            classificationSelected: [],
-            content: '',
-            publishTime: ''
-        };
-    },
-    mounted () {
-        this.articleTitle = localStorage.articleTitle;
-        this.tagsList = localStorage.tagsList ? JSON.parse(localStorage.tagsList) : [];
-        this.classificationSelected = localStorage.classificationSelected ? JSON.parse(localStorage.classificationSelected) : [];
-        this.content = localStorage.content;
-        this.publishTime = localStorage.publishTime;
-    }
-};
+	data () {
+		return {
+			articleTitle: '',
+			tagsList: '',
+			classificationSelected: [],
+			content: '',
+			publishTime: ''
+		}
+	},
+	mounted () {
+		this.articleTitle = localStorage.articleTitle
+		this.tagsList = localStorage.tagsList ? JSON.parse(localStorage.tagsList) : []
+		this.classificationSelected = localStorage.classificationSelected ? JSON.parse(localStorage.classificationSelected) : []
+		this.content = localStorage.content
+		this.publishTime = localStorage.publishTime
+	}
+}
 </script>

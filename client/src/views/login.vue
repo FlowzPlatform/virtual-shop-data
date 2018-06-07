@@ -184,152 +184,151 @@
 </template>
 
 <script>
-import Vue from 'vue';  
-import Cookies from 'js-cookie';
+import Vue from 'vue'
+import Cookies from 'js-cookie'
 import ElementUI from 'element-ui'
 import axios from 'axios'
 import config from '../config/customConfig'
 import 'element-ui/lib/theme-chalk/index.css'
-import psl from 'psl';
+import psl from 'psl'
+import $ from 'jquery'
 
 Vue.use(ElementUI)
-var $loginMsg = $('.loginMsg'),
-            $login = $('.login'),
-            $signupMsg = $('.signupMsg'),
-            $signup = $('.signup'),
-            $frontbox = $('.frontbox');
+let $loginMsg = $('.loginMsg')
+let	$login = $('.login')
+let	$signupMsg = $('.signupMsg')
+let	$signup = $('.signup')
+let	$frontbox = $('.frontbox')
 
-
-//let location = psl.parse(window.location.hostname)
+// let location = psl.parse(window.location.hostname)
 export default {
-    data () {
-        return {
-            varifyEmail : "",
-            obId : "",
-            isSocialLogin : false,
-            form: {
-                userName: 'iview_admin',
-                password: ''
-            },
-            rules: {
-                userName: [
-                    { required: true, message: 'Enter Username', trigger: 'blur' }
-                ],
-                password: [
-                    { required: true, message: 'Enter Password', trigger: 'blur' }
-                ]
-            },
-            errmsg: '',
-            header: 'Login',
-            email: '',
-            password: '',
-            username: '',
-            signupemail: '',
-            signuppassword: '',
-            selectedTabIndex: '',
-            saveFileLoading: false,
-            saveFileLoadingLogin: false,
-            showForgotPassword: false,
-            emailLoading: false,
-            login: {
-                email: "",
-                password: ""
-            },
-            signup: {
-                fname: "",
-                lname:'',
-                password: "",
-                email: ""
-            },
-            selectedTabIndex: 1,
-            facebookSuccessCallbackUrl : config.default.facebookSuccessCallbackUrl,
-            googleSuccessCallbackUrl : config.default.googleSuccessCallbackUrl,
-            twitterSuccessCallbackUrl: config.default.twitterSuccessCallbackUrl,
-            githubSuccessCallbackUrl: config.default.githubSuccessCallbackUrl,
-            linkedInSuccessCallbackUrl: config.default.linkedInSuccessCallbackUrl,
-            loginWithFacebookUrl : config.default.loginWithFacebookUrl,
-            loginWithGoogleUrl : config.default.loginWithGoogleUrl,
-            loginWithTwitterUrl: config.default.loginWithTwitterUrl,
-            loginWithGithubUrl: config.default.loginWithGithubUrl,
-            loginWithLinkedInUrl: config.default.loginWithLinkedInUrl
-        };
-    },
-    methods: {
-        // handleSubmit () {
-        //     this.$refs.loginForm.validate((valid) => {
-        //         if (valid) {
-        //             Cookies.set('user', this.form.userName);
-        //             Cookies.set('password', this.form.password);
-        //             this.$store.commit('setAvator', 'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3448484253,3685836170&fm=27&gp=0.jpg');
-        //             if (this.form.userName === 'iview_admin') {
-        //                 Cookies.set('access', 0);
-        //             } else {
-        //                 Cookies.set('access', 1);
-        //             }
-        //             this.$router.push({
-        //                 name: 'Dashboard'
-        //             });
-        //         }
-        //     });
-        // }
+	data () {
+		return {
+			varifyEmail: '',
+			obId: '',
+			isSocialLogin: false,
+			form: {
+				userName: 'iview_admin',
+				password: ''
+			},
+			rules: {
+				userName: [
+					{ required: true, message: 'Enter Username', trigger: 'blur' }
+				],
+				password: [
+					{ required: true, message: 'Enter Password', trigger: 'blur' }
+				]
+			},
+			errmsg: '',
+			header: 'Login',
+			email: '',
+			password: '',
+			username: '',
+			signupemail: '',
+			signuppassword: '',
+			saveFileLoading: false,
+			saveFileLoadingLogin: false,
+			showForgotPassword: false,
+			emailLoading: false,
+			login: {
+				email: '',
+				password: ''
+			},
+			signup: {
+				fname: '',
+				lname: '',
+				password: '',
+				email: ''
+			},
+			selectedTabIndex: 1,
+			facebookSuccessCallbackUrl: config.default.facebookSuccessCallbackUrl,
+			googleSuccessCallbackUrl: config.default.googleSuccessCallbackUrl,
+			twitterSuccessCallbackUrl: config.default.twitterSuccessCallbackUrl,
+			githubSuccessCallbackUrl: config.default.githubSuccessCallbackUrl,
+			linkedInSuccessCallbackUrl: config.default.linkedInSuccessCallbackUrl,
+			loginWithFacebookUrl: config.default.loginWithFacebookUrl,
+			loginWithGoogleUrl: config.default.loginWithGoogleUrl,
+			loginWithTwitterUrl: config.default.loginWithTwitterUrl,
+			loginWithGithubUrl: config.default.loginWithGithubUrl,
+			loginWithLinkedInUrl: config.default.loginWithLinkedInUrl
+		}
+	},
+	methods: {
+		// handleSubmit () {
+		//     this.$refs.loginForm.validate((valid) => {
+		//         if (valid) {
+		//             Cookies.set('user', this.form.userName);
+		//             Cookies.set('password', this.form.password);
+		//             this.$store.commit('setAvator', 'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3448484253,3685836170&fm=27&gp=0.jpg');
+		//             if (this.form.userName === 'iview_admin') {
+		//                 Cookies.set('access', 0);
+		//             } else {
+		//                 Cookies.set('access', 1);
+		//             }
+		//             this.$router.push({
+		//                 name: 'Dashboard'
+		//             });
+		//         }
+		//     });
+		// }
 
-        async  getTokenFromSocialLogin(){
-            let self = this
-            let valid = await this.validateEmail(this.varifyEmail); ;
-            if(!valid){
-                this.$message.warning("Please enter a valid email address")
-            }else{
-                this.emailLoading = true;
-                axios.post(config.default.varifyEmailUrl, {
-                    email: this.varifyEmail,
-                    id: this.obId
-                })
-                .then(function(response) {
-                    self.emailLoading = false ;
-                    self.saveFileLoadingLogin = false;
-                    
-                    axios({
-                        method: 'post',
-                        url: config.default.userDetail,
-                        headers: {'Authorization': response.data.logintoken}
-                    })
-                    .then(function(result) {
-                        let location = psl.parse(window.location.hostname)
-                        location = location.domain === null ? location.input : location.domain
-                            Cookies.set('user',  result.data.data.email  , {domain: location});
-                            Cookies.set('auth_token', response.data.logintoken , {domain: location});
-                    
-                        self.$store.commit('setAvator', 'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3448484253,3685836170&fm=27&gp=0.jpg');
-                        if (self.form.email === 'iview_admin') {
-                            Cookies.set('access', 0);
-                        } else {
-                            Cookies.set('access', 1);
-                        }
-                        self.$router.push({
-                            name: 'Dashboard'
-                        });
-                    })
-                }).catch(function(error){
-                    self.emailLoading = false ;
-                    if(error.response.status == 409){
-                        self.$message.error(error.response.data)
-                    }
-                })
-            }
-        },
-        forgotPassword(){
-            let params = new URLSearchParams(document.location.href);
-            let name = params.get("ob_id"); // is the string "Jonathan"
-            this.header = 'Forgot Password'
-            this.showForgotPassword = true;
-        },
-        backtoLogin(){
-            this.header = 'Login'
-            this.showForgotPassword = false;
-        },
-        /* facebookLogin() {
+		async  getTokenFromSocialLogin () {
+			let self = this
+			let valid = await this.validateEmail(this.varifyEmail)
+			if (!valid) {
+				this.$message.warning('Please enter a valid email address')
+			} else {
+				this.emailLoading = true
+				axios.post(config.default.varifyEmailUrl, {
+					email: this.varifyEmail,
+					id: this.obId
+				})
+					.then(function (response) {
+						self.emailLoading = false
+						self.saveFileLoadingLogin = false
+
+						axios({
+							method: 'post',
+							url: config.default.userDetail,
+							headers: {'Authorization': response.data.logintoken}
+						})
+							.then(function (result) {
+								let location = psl.parse(window.location.hostname)
+								location = location.domain === null ? location.input : location.domain
+								Cookies.set('user', result.data.data.email, {domain: location})
+								Cookies.set('auth_token', response.data.logintoken, {domain: location})
+
+								self.$store.commit('setAvator', 'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3448484253,3685836170&fm=27&gp=0.jpg')
+								if (self.form.email === 'iview_admin') {
+									Cookies.set('access', 0)
+								} else {
+									Cookies.set('access', 1)
+								}
+								self.$router.push({
+									name: 'Dashboard'
+								})
+							})
+					}).catch(function (error) {
+						self.emailLoading = false
+						if (error.response.status == 409) {
+							self.$message.error(error.response.data)
+						}
+					})
+			}
+		},
+		forgotPassword () {
+			// let params = new URLSearchParams(document.location.href)
+			// let name = params.get('ob_id') // is the string "Jonathan"
+			this.header = 'Forgot Password'
+			this.showForgotPassword = true
+		},
+		backtoLogin () {
+			this.header = 'Login'
+			this.showForgotPassword = false
+		},
+		/* facebookLogin() {
             // this.isSocialLogin = true;
-             $("#form-facebook").submit() 
+             $("#form-facebook").submit()
         },
         googleLogin() {
             ////this.isSocialLogin = true;
@@ -347,272 +346,265 @@ export default {
            // this.isSocialLogin = true;
             $("#form-linkedIn").submit();
         }, */
-       googleLogin2() {
-            ////this.isSocialLogin = true;
-             $("#form-google2").submit();
-        },
-        twitterLogin2() {
-           // this.isSocialLogin = true;
-            $("#form-twitter2").submit();
-        },
-        githubLogin2() {
-            //this.isSocialLogin = true;
-            $("#form-github2").submit();
-        },
-        linkdinLogin2() {
-           // this.isSocialLogin = true;
-            $("#form-linkedIn2").submit();
-        },
-        tabsClicked(val) {
-            this.login.email = ''
-            this.login.password = ''
-            this.selectedTabIndex = val;
-        },
-        handleLoginSubmit: function() {
-            if (this.showForgotPassword) {
-                this.forgotPasswordSendEmail()
-            } else {
-                this.loginUser()
-            }
-        },
-        loginUser: async function() {
-            let self = this;
-            let emailValidator = await this.validateEmail(self.login.email);
+		googleLogin2 () {
+			/// /this.isSocialLogin = true;
+			$('#form-google2').submit()
+		},
+		twitterLogin2 () {
+			// this.isSocialLogin = true;
+			$('#form-twitter2').submit()
+		},
+		githubLogin2 () {
+			// this.isSocialLogin = true;
+			$('#form-github2').submit()
+		},
+		linkdinLogin2 () {
+			// this.isSocialLogin = true;
+			$('#form-linkedIn2').submit()
+		},
+		tabsClicked (val) {
+			this.login.email = ''
+			this.login.password = ''
+			this.selectedTabIndex = val
+		},
+		handleLoginSubmit: function () {
+			if (this.showForgotPassword) {
+				this.forgotPasswordSendEmail()
+			} else {
+				this.loginUser()
+			}
+		},
+		loginUser: async function () {
+			let self = this
+			let emailValidator = await this.validateEmail(self.login.email)
 
-            if (self.login.email == "") {
-                self.$message.warning("Email field is required");
-            } else if (emailValidator == false) {
-                self.$message.warning("Email is not valid");
-            } else if (self.login.password == "") {
-                self.$message.warning("Password field is required");
-            } else {
-                self.saveFileLoadingLogin = true;
-                axios.post(this.selectedTabIndex == 1 ? config.default.loginUrl : config.default.ldapLoginUrl, {
-                    email: self.login.email.trim(),
-                    password: self.login.password.trim()
-                })
-                .then(function(response) {
-                    self.saveFileLoadingLogin = false;
-                    axios({
-                        method: 'get',
-                        url: config.default.userDetail,
-                        headers: {'Authorization': response.data.logintoken}
-                    })
-                    .then(function(result) {
-                        let location = psl.parse(window.location.hostname)
-                        location = location.domain === null ? location.input : location.domain
-                        Cookies.set('user',  result.data.data.email  , {domain: location});
-                        Cookies.set('auth_token', response.data.logintoken , {domain: location});
-                    
-                        self.$store.commit('setAvator', 'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3448484253,3685836170&fm=27&gp=0.jpg');
-                        if (self.form.email === 'iview_admin') {
-                            Cookies.set('access', 0);
-                        } else {
-                            Cookies.set('access', 1);
-                        }
-                        self.$router.push({
-                            name: 'Dashboard'
-                        });
-                    })
-                    
-                })
-                .catch(function(error) {
-                    self.saveFileLoadingLogin = false;
-                    self.$message.error(error.response.data);
-                });
-            }
-        },
-        signupUser:async function(){
-            let self = this;
-            let emailValidator = await this.validateEmail(self.signup.email);
-            if(self.signup.fname == ""){
-                self.$message.warning("First name is required");
-            }else if(self.signup.lname == ""){
-                self.$message.warning("Last name is required");
-            }else if(self.signup.email == ""){
-               self.$message.warning("Email is required");
-            }else if(emailValidator == false){
-               self.$message.warning("Email is not valid");
-            }else if(self.signup.password == ""){
-               self.$message.warning("Password is required");
-            }else{
-               self.saveFileLoading = true;
-               axios.post(config.default.signupUrl, {
-                    email: self.signup.email.trim(),
-                    password: self.signup.password.trim(),
-                    firstname: self.signup.fname.trim(),
-                    lastname : self.signup.lname.trim()
-                })
-                .then(function (response) {
-                    if(response.data.code == 200){
-                        self.saveFileLoading = false;
-                        //alert(response.data.message+", please check your email for password")
-                        self.$message({
-                            message : response.data.message,
-                            type: 'success'
-                        });
-                        /* self.signup.email = '';
+			if (self.login.email == '') {
+				self.$message.warning('Email field is required')
+			} else if (emailValidator == false) {
+				self.$message.warning('Email is not valid')
+			} else if (self.login.password == '') {
+				self.$message.warning('Password field is required')
+			} else {
+				self.saveFileLoadingLogin = true
+				axios.post(this.selectedTabIndex == 1 ? config.default.loginUrl : config.default.ldapLoginUrl, {
+					email: self.login.email.trim(),
+					password: self.login.password.trim()
+				})
+					.then(function (response) {
+						self.saveFileLoadingLogin = false
+						axios({
+							method: 'get',
+							url: config.default.userDetail,
+							headers: {'Authorization': response.data.logintoken}
+						})
+							.then(function (result) {
+								let location = psl.parse(window.location.hostname)
+								location = location.domain === null ? location.input : location.domain
+								Cookies.set('user', result.data.data.email, {domain: location})
+								Cookies.set('auth_token', response.data.logintoken, {domain: location})
+
+								self.$store.commit('setAvator', 'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3448484253,3685836170&fm=27&gp=0.jpg')
+								if (self.form.email === 'iview_admin') {
+									Cookies.set('access', 0)
+								} else {
+									Cookies.set('access', 1)
+								}
+								self.$router.push({
+									name: 'Dashboard'
+								})
+							})
+					})
+					.catch(function (error) {
+						self.saveFileLoadingLogin = false
+						self.$message.error(error.response.data)
+					})
+			}
+		},
+		signupUser: async function () {
+			let self = this
+			let emailValidator = await this.validateEmail(self.signup.email)
+			if (self.signup.fname == '') {
+				self.$message.warning('First name is required')
+			} else if (self.signup.lname == '') {
+				self.$message.warning('Last name is required')
+			} else if (self.signup.email == '') {
+				self.$message.warning('Email is required')
+			} else if (emailValidator == false) {
+				self.$message.warning('Email is not valid')
+			} else if (self.signup.password == '') {
+				self.$message.warning('Password is required')
+			} else {
+				self.saveFileLoading = true
+				axios.post(config.default.signupUrl, {
+					email: self.signup.email.trim(),
+					password: self.signup.password.trim(),
+					firstname: self.signup.fname.trim(),
+					lastname: self.signup.lname.trim()
+				})
+					.then(function (response) {
+						if (response.data.code == 200) {
+							self.saveFileLoading = false
+							// alert(response.data.message+", please check your email for password")
+							self.$message({
+								message: response.data.message,
+								type: 'success'
+							})
+							/* self.signup.email = '';
                         self.signup.password = "";
                         self.signup.fname = "";
                         self.signup.lname = ""; */
 
-                        $("#signupForm")[0].reset();
-                        $loginMsg.toggleClass("visibility");
-                        $frontbox.removeClass("moving");
-                        $signupMsg.toggleClass("visibility");
-                        $signup.toggleClass('hide');
-                        $login.toggleClass('hide');
-                    }else{
-                        self.saveFileLoading = false;
-                        self.$message({
-                            message: response.data.error,
-                            type: 'warning'
-                        });
-                    }
-                })
-                .catch(function (error) {
-                    // this.login.password = ''
-                    self.saveFileLoading = false;
-                    //alert(error);
-                    self.$message.error("Something went wrong , Please try again later");
-                });
-            }
-        },
-        
-        forgotPasswordSendEmail: async function() {
-            let self = this;
-            let emailValidator = await this.validateEmail(self.login.email);
-            if (self.login.email == "") {
-                self.$message.warning("Email field is required");
-            } else if (emailValidator == false) {
-                self.$message.warning("Email is not valid");
-            } else {
-                self.saveFileLoadingLogin = true;
-                axios.post(config.default.forgotPasswordUrl, {
-                        email: self.login.email.trim(),
-                        url: config.default.resetPasswordRedirectUrl
-                    })
-                    .then(function(response) {
-                        self.saveFileLoadingLogin = false;
-                        if (response.data.code == 200) {
-                            self.$message.success(response.data.message);
-                            self.login.email = ""
-                        }
-                    })
-                    .catch(function(error) {
-                        /* if(error.response.status == 401) {
+							$('#signupForm')[0].reset()
+							$loginMsg.toggleClass('visibility')
+							$frontbox.removeClass('moving')
+							$signupMsg.toggleClass('visibility')
+							$signup.toggleClass('hide')
+							$login.toggleClass('hide')
+						} else {
+							self.saveFileLoading = false
+							self.$message({
+								message: response.data.error,
+								type: 'warning'
+							})
+						}
+					})
+					.catch(function (error) { // eslint-disable-line handle-callback-err
+						// this.login.password = ''
+						self.saveFileLoading = false
+						// alert(error);
+						self.$message.error('Something went wrong , Please try again later')
+					})
+			}
+		},
+
+		forgotPasswordSendEmail: async function () {
+			let self = this
+			let emailValidator = await this.validateEmail(self.login.email)
+			if (self.login.email == '') {
+				self.$message.warning('Email field is required')
+			} else if (emailValidator == false) {
+				self.$message.warning('Email is not valid')
+			} else {
+				self.saveFileLoadingLogin = true
+				axios.post(config.default.forgotPasswordUrl, {
+					email: self.login.email.trim(),
+					url: config.default.resetPasswordRedirectUrl
+				})
+					.then(function (response) {
+						self.saveFileLoadingLogin = false
+						if (response.data.code == 200) {
+							self.$message.success(response.data.message)
+							self.login.email = ''
+						}
+					})
+					.catch(function (error) {
+						/* if(error.response.status == 401) {
                             self.$message.error("Email is not registered..!");
                         } else {
                         } */
-                        self.$message.error(error.response.data);
-                        self.saveFileLoadingLogin = false;
-                    });
-            }
-        },
-        validateEmail(email) {
-            var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-            return re.test(email);
-        },
-        init (){
-            let self = this;
-            if(Cookies.get('auth_token')){
-                axios({
-                            method: 'get',
-                            url: config.default.userDetail,
-                            headers: {'Authorization': Cookies.get('auth_token')}
-                        })
-                        .then(function(result) {
-                            let location = psl.parse(window.location.hostname)
-                            location = location.domain === null ? location.input : location.domain
-                            Cookies.set('user',  result.data.data.email  , {domain: location});
-                             
-                              //Cookies.set('auth_token', result.data.logintoken);
-                        
-                            //Cookies.set('email', response.data.email);
-                            
-                            //self.$store.commit('setAvator', 'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3448484253,3685836170&fm=27&gp=0.jpg');
-                            
-                            self.$router.push({
-                                name: 'Dashboard'
-                            });
-                        })
+						self.$message.error(error.response.data)
+						self.saveFileLoadingLogin = false
+					})
+			}
+		},
+		validateEmail (email) {
+			var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ // eslint-disable-line no-useless-escape
+			return re.test(email)
+		},
+		init () {
+			let self = this
+			if (Cookies.get('auth_token')) {
+				axios({
+					method: 'get',
+					url: config.default.userDetail,
+					headers: {'Authorization': Cookies.get('auth_token')}
+				})
+					.then(function (result) {
+						let location = psl.parse(window.location.hostname)
+						location = location.domain === null ? location.input : location.domain
+						Cookies.set('user', result.data.data.email, {domain: location})
 
-            }
+						// Cookies.set('auth_token', result.data.logintoken);
 
-        }
+						// Cookies.set('email', response.data.email);
 
-    },
-    watch: {
-        // // whenever question changes, this function will run
-        // isSocialLogin: function (newQuestion) {
-        //     console.log("newQuestion ", newQuestion)
-        //     if(newQuestion){
-                
-        //     }
-            
-        // }
-    },
-    created(){
-        let self = this;
-        var configObj = {};
-        if(location.search){
-        addToModel(location.search.slice(1).split('&'));
-        }
-        if(location.hash){
-        addToModel(location.hash.slice(1).split('&'));
-        }
-        function addToModel(searchParams){
-            
-        for(var s in searchParams){
-            
-        var q = searchParams[s].split('=');
-       
-        configObj[q[0]] = !!q[1] ? unescape(q[1]) : "";
-        }
-        }
-        if(Object.keys(configObj)[0] == "/login?ob_id")
-        {
-            let paramsArr = Object.values(configObj);
-            
-            self.isSocialLogin = true;
-            self.obId = paramsArr[0];
-        }else if (Object.keys(configObj)[0] == "/login?token")
-        {
-            let paramsArr = Object.values(configObj);
-            let location = psl.parse(window.location.hostname)
-            location = location.domain === null ? location.input : location.domain;
-            Cookies.set('auth_token', paramsArr[0] , {domain: location})
-        }
-    },
-    mounted() {
-     /*  if(Cookies.get("auth_token") != undefined){
+						// self.$store.commit('setAvator', 'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3448484253,3685836170&fm=27&gp=0.jpg');
+
+						self.$router.push({
+							name: 'Dashboard'
+						})
+					})
+			}
+		}
+
+	},
+	watch: {
+		// // whenever question changes, this function will run
+		// isSocialLogin: function (newQuestion) {
+		//     console.log("newQuestion ", newQuestion)
+		//     if(newQuestion){
+
+		//     }
+
+		// }
+	},
+	created () {
+		let self = this
+		var configObj = {}
+		if (location.search) {
+			addToModel(location.search.slice(1).split('&'))
+		}
+		if (location.hash) {
+			addToModel(location.hash.slice(1).split('&'))
+		}
+		function addToModel (searchParams) {
+			for (var s in searchParams) {
+				var q = searchParams[s].split('=')
+
+				configObj[q[0]] = q[1] ? unescape(q[1]) : ''
+			}
+		}
+		if (Object.keys(configObj)[0] == '/login?ob_id') {
+			let paramsArr = Object.values(configObj)
+
+			self.isSocialLogin = true
+			self.obId = paramsArr[0]
+		} else if (Object.keys(configObj)[0] == '/login?token') {
+			let paramsArr = Object.values(configObj)
+			let location = psl.parse(window.location.hostname)
+			location = location.domain === null ? location.input : location.domain
+			Cookies.set('auth_token', paramsArr[0], {domain: location})
+		}
+	},
+	mounted () {
+		/*  if(Cookies.get("auth_token") != undefined){
         this.$router.push({
                                 name: 'Dashboard'
                             });
       } */
-        
-        this.init();
-        var $loginMsg = $('.loginMsg'),
-            $login = $('.login'),
-            $signupMsg = $('.signupMsg'),
-            $signup = $('.signup'),
-            $frontbox = $('.frontbox');
-        $('#switch1').on('click', function() {
-            $loginMsg.toggleClass("visibility");
-            $frontbox.addClass("moving");
-            $signupMsg.toggleClass("visibility");
-            $signup.toggleClass('hide');
-            $login.toggleClass('hide');
-        })
-        $('#switch2').on('click', function() {
-            $loginMsg.toggleClass("visibility");
-            $frontbox.removeClass("moving");
-            $signupMsg.toggleClass("visibility");
-            $signup.toggleClass('hide');
-            $login.toggleClass('hide');
-        })
-    }
-};
+
+		this.init()
+		let $loginMsg = $('.loginMsg')
+		let $login = $('.login')
+		let $signupMsg = $('.signupMsg')
+		let $signup = $('.signup')
+		let $frontbox = $('.frontbox')
+		$('#switch1').on('click', function () {
+			$loginMsg.toggleClass('visibility')
+			$frontbox.addClass('moving')
+			$signupMsg.toggleClass('visibility')
+			$signup.toggleClass('hide')
+			$login.toggleClass('hide')
+		})
+		$('#switch2').on('click', function () {
+			$loginMsg.toggleClass('visibility')
+			$frontbox.removeClass('moving')
+			$signupMsg.toggleClass('visibility')
+			$signup.toggleClass('hide')
+			$login.toggleClass('hide')
+		})
+	}
+}
 </script>
 
 
