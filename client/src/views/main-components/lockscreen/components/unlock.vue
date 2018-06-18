@@ -27,54 +27,54 @@
 </template>
 
 <script>
-import Cookies from 'js-cookie';
+import Cookies from 'js-cookie'
 export default {
-    name: 'Unlock',
-    data () {
-        return {
-            avatorLeft: '0px',
-            inputLeft: '400px',
-            password: '',
-            check: null
-        };
-    },
-    props: {
-        showUnlock: {
-            type: Boolean,
-            default: false
-        }
-    },
-    computed: {
-        avatorPath () {
-            return localStorage.avatorImgPath;
-        }
-    },
-    methods: {
-        validator () {
-            return true; // 你可以在这里写密码验证方式，如发起ajax请求将用户输入的密码this.password与数据库用户密码对比
-        },
-        handleClickAvator () {
-            this.avatorLeft = '-180px';
-            this.inputLeft = '0px';
-            this.$refs.inputEle.focus();
-        },
-        handleUnlock () {
-            if (this.validator()) {
-                this.avatorLeft = '0px';
-                this.inputLeft = '400px';
-                this.password = '';
-                Cookies.set('locking', '0');
-                this.$emit('on-unlock');
-            } else {
-                this.$Message.error('Error');
-            }
-        },
-        unlockMousedown () {
-            this.$refs.unlockBtn.className = 'unlock-btn click-unlock-btn';
-        },
-        unlockMouseup () {
-            this.$refs.unlockBtn.className = 'unlock-btn';
-        }
-    }
-};
+	name: 'Unlock',
+	data () {
+		return {
+			avatorLeft: '0px',
+			inputLeft: '400px',
+			password: '',
+			check: null
+		}
+	},
+	props: {
+		showUnlock: {
+			type: Boolean,
+			default: false
+		}
+	},
+	computed: {
+		avatorPath () {
+			return localStorage.avatorImgPath
+		}
+	},
+	methods: {
+		validator () {
+			return true // 你可以在这里写密码验证方式，如发起ajax请求将用户输入的密码this.password与数据库用户密码对比
+		},
+		handleClickAvator () {
+			this.avatorLeft = '-180px'
+			this.inputLeft = '0px'
+			this.$refs.inputEle.focus()
+		},
+		handleUnlock () {
+			if (this.validator()) {
+				this.avatorLeft = '0px'
+				this.inputLeft = '400px'
+				this.password = ''
+				Cookies.set('locking', '0')
+				this.$emit('on-unlock')
+			} else {
+				this.$Message.error('Error')
+			}
+		},
+		unlockMousedown () {
+			this.$refs.unlockBtn.className = 'unlock-btn click-unlock-btn'
+		},
+		unlockMouseup () {
+			this.$refs.unlockBtn.className = 'unlock-btn'
+		}
+	}
+}
 </script>
