@@ -12,7 +12,9 @@ then
     RANCHER_ACCESSKEY="$RANCHER_ACCESSKEY_MASTER";
     RANCHER_SECRETKEY="$RANCHER_SECRETKEY_MASTER";
     RANCHER_URL="$RANCHER_URL_MASTER";
-  }
+    SERVICE_NAME_FRONTEND="$SERVICE_NAME_FRONTEND_MASTER";
+    SERVICE_NAME_WORKER="$SERVICE_NAME_WORKER_MASTER";
+   }
 elif [ "$TRAVIS_BRANCH" = "develop" ]
 then
     {
@@ -22,6 +24,8 @@ then
       RANCHER_ACCESSKEY="$RANCHER_ACCESSKEY_DEVELOP";
       RANCHER_SECRETKEY="$RANCHER_SECRETKEY_DEVELOP";
       RANCHER_URL="$RANCHER_URL_DEVELOP";
+      SERVICE_NAME_FRONTEND="$SERVICE_NAME_FRONTEND_DEVELOP";
+      SERVICE_NAME_WORKER="$SERVICE_NAME_WORKER_DEVELOP";
   }
 elif [ "$TRAVIS_BRANCH" = "staging" ]
 then
@@ -32,6 +36,8 @@ then
       RANCHER_ACCESSKEY="$RANCHER_ACCESSKEY_STAGING";
       RANCHER_SECRETKEY="$RANCHER_SECRETKEY_STAGING";
       RANCHER_URL="$RANCHER_URL_STAGING";
+      SERVICE_NAME_FRONTEND="$SERVICE_NAME_FRONTEND_STAGING";
+      SERVICE_NAME_WORKER="$SERVICE_NAME_WORKER_STAGING";
   }  
 else
   {
@@ -41,13 +47,15 @@ else
       RANCHER_ACCESSKEY="$RANCHER_ACCESSKEY_QA";
       RANCHER_SECRETKEY="$RANCHER_SECRETKEY_QA";
       RANCHER_URL="$RANCHER_URL_QA";
+      SERVICE_NAME_FRONTEND="$SERVICE_NAME_FRONTEND_QA";
+      SERVICE_NAME_WORKER="$SERVICE_NAME_WORKER_QA";
   }
 fi
 
-SERVICE_ID=`curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "$RANCHER_URL/v2-beta/projects/$ENV_ID/services?name=vshopdata-frontend-flowz" | jq '.data[].id' | tr -d '"'`
-echo $SERVICE_ID
+SERVICE_ID_FRONTEND=`curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "$RANCHER_URL/v2-beta/projects/$ENV_ID/services?name=$SERVICE_NAME_FRONTEND" | jq '.data[].id' | tr -d '"'`
+echo $SERVICE_ID_FRONTEND
 
-SERVICE_ID_WORKER=`curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "$RANCHER_URL/v2-beta/projects/$ENV_ID/services?name=vshopdata-worker" | jq '.data[].id' | tr -d '"'`
+SERVICE_ID_WORKER=`curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" -X GET -H 'Accept: application/json' -H 'Content-Type: application/json' "$RANCHER_URL/v2-beta/projects/$ENV_ID/services?name=$SERVICE_NAME_WORKER" | jq '.data[].id' | tr -d '"'`
 echo $SERVICE_ID_WORKER
 
 echo "waiting for service to upgrade "
@@ -57,14 +65,14 @@ echo "waiting for service to upgrade "
           -X GET \
           -H 'Accept: application/json' \
           -H 'Content-Type: application/json' \
-          "$RANCHER_URL/v2-beta/projects/$ENV_ID/services/$SERVICE_ID/" | jq '.state'` in
+          "$RANCHER_URL/v2-beta/projects/$ENV_ID/services/$SERVICE_ID_FRONTEND/" | jq '.state'` in
           "\"upgraded\"" )
               echo "completing service upgrade"
               curl -u ""$RANCHER_ACCESSKEY":"$RANCHER_SECRETKEY"" \
                 -X POST \
                 -H 'Accept: application/json' \
                 -H 'Content-Type: application/json' \
-                "$RANCHER_URL/v2-beta/projects/$ENV_ID/services/$SERVICE_ID?action=finishupgrade"
+                "$RANCHER_URL/v2-beta/projects/$ENV_ID/services/$SERVICE_ID_FRONTEND?action=finishupgrade"
               break ;;
           "\"upgrading\"" )
               echo "still upgrading"
