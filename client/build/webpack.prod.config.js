@@ -55,7 +55,7 @@ module.exports = merge(webpackBaseConfig, {
               drop_debugger: true
              }
         }), */
-        new webpack.EnvironmentPlugin(['domainkey','apiURL','vId']),
+        new webpack.EnvironmentPlugin(['domainkey']),
         new CopyWebpackPlugin([
             {
                 from: 'favicon.ico'
