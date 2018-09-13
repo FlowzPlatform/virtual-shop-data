@@ -206,7 +206,7 @@ export default {
     			this.$store.commit('setMessageCount', 3)
     			self.userName = await Cookies.get('user')
     			// setTimeout(function(){ self.userName = Cookies.get('user'); }, 2000);
-    		},
+		},
     		toggleClick () {
     			this.shrink = !this.shrink
     		},
@@ -327,7 +327,7 @@ export default {
     			let user = res.data.data.firstname + ' ' + res.data.data.lastname
     			await Object.keys(res.data.data.package).forEach(async function (key) {
     				if (res.data.data.package[key].hasOwnProperty('invitedBy')) {
-    					let inviter = await self.getUserDetailsByEmail(res.data.data.package[key].invitedBy)
+					let inviter = await self.getUserDetailsByEmail(res.data.data.package[key].invitedBy)
     					if (inviter == 'undefined undefined') {
     						user = res.data.data.package[key].invitedBy
     					} else {
@@ -336,12 +336,12 @@ export default {
     				}
     				if (user == 'undefined undefined') {
     					user = res.data.data.email
-    				}
-    				self.totalUser.push({'user': user})
-    				self.subscribedUser.push({'user': user, 'package': { 'name': res.data.data.package[key].name, 'id': key }})
-    			})
+				}
+				self.subscribedUser.push({'user': user, 'package': { 'name': res.data.data.package[key].name, 'id': key }})
+				self.totalUser.push({'user': user})
+				self.totalUser = _.uniqBy(self.totalUser, 'user')
+			})
     			self.userSubscription = self.subscribedUser
-    			self.totalUser = _.uniqBy(self.totalUser, 'user')
     		}).catch(err => {
     			if (err.response.status == '401') {
     				self.$Message.error({
