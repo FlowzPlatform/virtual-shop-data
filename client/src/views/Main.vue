@@ -49,20 +49,20 @@
                 </div>
                 <div class="header-avator-con">
                     <!-- <div class="headerMenu">
-                    <Menu mode="horizontal"  active-name="1">
-                        <Submenu name="3">
-                            <template slot="title">
-                                <Icon type="grid" size="large" style="font-size: 23px;padding-top: 21px;"></Icon>
-                            </template>
-                            <MenuGroup title="Flowz-Products">
-                                <MenuItem name="3-1"><span @click="goToFlowzDashboard">Flowz Dashboard</span></MenuItem>
-                                <MenuItem name="3-2"><span @click="goToFlowzBuilder">Website Builder</span></MenuItem>
-                                <MenuItem name="3-3"><span @click="goToFlowzVmail">Vmail</span></MenuItem>
-                                <MenuItem name="3-4"><span @click="goToFlowzUploader">Uploader</span></MenuItem>
-                                <MenuItem name="3-5"><span @click="goToFlowzDbetl">DBETL</span></MenuItem>
-                            </MenuGroup>
-                        </Submenu>
-                    </Menu>
+											<Menu mode="horizontal"  active-name="1">
+													<Submenu name="3">
+															<template slot="title">
+																	<Icon type="grid" size="large" style="font-size: 23px;padding-top: 21px;"></Icon>
+															</template>
+															<MenuGroup title="Flowz-Products">
+																	<MenuItem name="3-1"><span @click="goToFlowzDashboard">Flowz Dashboard</span></MenuItem>
+																	<MenuItem name="3-2"><span @click="goToFlowzBuilder">Website Builder</span></MenuItem>
+																	<MenuItem name="3-3"><span @click="goToFlowzVmail">Vmail</span></MenuItem>
+																	<MenuItem name="3-4"><span @click="goToFlowzUploader">Uploader</span></MenuItem>
+																	<MenuItem name="3-5"><span @click="goToFlowzDbetl">DBETL</span></MenuItem>
+															</MenuGroup>
+													</Submenu>
+											</Menu>
                     </div> -->
                     <!-- <Tooltip placement="bottom">
                          <div @click="goToSettings"><Icon type="gear-b" size="large" style="font-size: 23px;
@@ -72,16 +72,25 @@
                             Settings
                         </div>
                     </Tooltip> -->
-                    
-                    
+
                     <full-screen v-model="isFullScreen" @on-change="fullscreenChange"></full-screen>
                     <!--lock-screen></lock-screen-->
                     <!-- <message-tip v-model="mesCount"></message-tip> -->
                     <theme-switch></theme-switch>
-
                     <div class="user-dropdown-menu-con">
                         <Row type="flex" justify="end" align="middle" class="user-dropdown-innercon">
-                            <Dropdown transfer trigger="click" @on-click="handleClickUserDropdown">
+                            <Dropdown transfer @on-click="goToFlowzProduct">
+																<!-- <Icon type=grid :size="20"></Icon> -->
+															<a href="javascript:void(0)">
+																<span>Flowz products | </span>
+															</a>
+																<DropdownMenu slot="list">
+																	<DropdownItem name="flowzDashboardUrl">Flowz Dashboard</DropdownItem>
+																	<DropdownItem name="flowzBuilderUrl">Website Builder</DropdownItem>
+																	<DropdownItem name="flowzUploaderUrl">Uploader</DropdownItem>
+																</DropdownMenu>
+														</Dropdown>
+														<Dropdown transfer trigger="click" @on-click="handleClickUserDropdown">
                                 <Tooltip placement="left">
                                     <a href="javascript:void(0)">
                                         <span class="main-user-name">
@@ -260,22 +269,10 @@ export default {
     			this.$router.push({
     				name: 'settings'
     			})
-    		},
-    		goToFlowzDashboard () {
-    			window.open(this.flowzDashboardUrl, '_blank')
-    		},
-    		goToFlowzBuilder () {
-    			window.open(this.flowzBuilderUrl, '_blank')
-    		},
-    		goToFlowzVmail () {
-    			window.open(this.flowzVmailUrl, '_blank')
-    		},
-    		goToFlowzUploader () {
-    			window.open(this.flowzUploaderUrl, '_blank')
-    		},
-    		goToFlowzDbetl () {
-    			window.open(this.flowzDbetlUrl, '_blank')
-    		},
+		},
+		goToFlowzProduct (name) {
+			window.open(this[name], '_blank')
+		},
     		getUserDetailsByEmail (email) {
     			return axios({
     				method: 'post',

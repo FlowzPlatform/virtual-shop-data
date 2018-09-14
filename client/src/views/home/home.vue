@@ -407,8 +407,9 @@ export default {
   							let finalData = {
   								'virtualShopName': this.formValidate.name,
   								'suppliers': this.selectedData,
-  								'subscriptionId': this.$store.state.app.userSubscriptionId
-  							}
+								'subscriptionId': this.$store.state.app.userSubscriptionId
+							}
+							// console.log('finalData', finalData)
   							vshopdata.add(finalData, finalData.subscriptionId).then(res => {
   								if (res instanceof Error) {
   									this.$Message.error({
@@ -440,12 +441,6 @@ export default {
   						self.$message.error('Please Select Subscription..!')
   						self.sbmtLoading = false
   					}
-  					/* } else {
-              this.$Message.error({
-                content:'Please fill required fields..!',
-                duration: 5
-              })
-            } */
   				}
   			})
   		}
