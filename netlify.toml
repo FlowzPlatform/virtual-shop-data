@@ -2,7 +2,7 @@
 ID = "Develop-I"
 [build]
   # This will be your default build command
-  command = "npm run build -config client/package.json"
+  command = "npm run build -wd client"
   publish = "dist"
 
 #[[redirects]]
