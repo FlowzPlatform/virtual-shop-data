@@ -178,14 +178,9 @@ export default {
   					self.$router.push({ name: 'login' })
   				}
   			}
-  			// Cookie.remove('auth_token', {domain: location})
-  			// Cookie.remove('access', {domain: location})
-  			// Cookie.remove('user', {domain: location})
-  			// document.location = '/'
-  			// this.$router.push({ name: 'login' })
   		} else {
-  			this.supplyerListData = _.sortBy(data.data, [function (o) { return o.virtualShopName.toLowerCase() }])
-  			this.supplyerList = await this.makeChunk(this.currentPage, this.pageSize)
+  			this.supplyerListData = _.orderBy(data.data, 'createdAt', 'desc')
+				this.supplyerList = await this.makeChunk(this.currentPage, this.pageSize)
   			this.suplayerLoading = false
   		}
   		socket.on('update', async function (data) {
