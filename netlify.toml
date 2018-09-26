@@ -1,0 +1,30 @@
+[Settings]
+ID = "Develop-I"
+[build]
+  # This will be your default build command
+  base = "client/"
+  command = "npm run build"
+  publish = "client/dist"
+
+#[[redirects]]
+#  from = "/"
+#  to = "/index.html"
+#  status = 200
+#  force = true
+
+#[[redirects]]
+#  from = "/*"
+#  to = "/index.html"
+#  status = 301
+#  force = true
+  
+[[redirects]]
+  from = "/:page"
+  to = "/index.html"
+  status = 200
+  force = true
+  
+  
+[build.environment]
+  domainkey = "flowzdigital.com" 
+  vId = "af2ef447-f7f5-4b7b-b40e-f2680c3a7f0c"

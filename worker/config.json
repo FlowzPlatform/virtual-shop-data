@@ -1,0 +1,14 @@
+{
+  "cxnOptions": {
+    "host": "localhost",
+    "port": 28015,
+    "db": "feather_product",
+    "vshopData":"vshopdata",
+    "vshopDetail":"vshopDetail"
+  },
+  "ESConnection": {
+    "host": "localhost",
+    "port": "9600",
+    "auth": "elastic:changeme"
+  }
+}
