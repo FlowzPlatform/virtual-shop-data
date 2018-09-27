@@ -25,6 +25,4 @@ ID = "Develop-I"
   force = true
   
   
-[build.environment]
-  domainkey = "flowzcluster.tk" 
-  vId = "af2ef447-f7f5-4b7b-b40e-f2680c3a7f0c"
+
