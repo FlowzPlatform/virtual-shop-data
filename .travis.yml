@@ -14,35 +14,35 @@ branches:
 
 jobs:
   include:
-    - stage: Vshopdata-Frontend-Flowz
-      script:
-      - 'if [ ${TRAVIS_BRANCH} = "master" ]; then
-            docker login -u="$DOCKER_USERNAME_FLOWZ" -p="$DOCKER_PASSWORD_FLOWZ";
-            docker build -t vshopdata_frontend_flowz:latest --build-arg domainkey="$DOMAINKEY_MASTER" --build-arg vId="$vId" ./client/;
-            docker images;
-            docker tag vshopdata_frontend_flowz:latest $DOCKER_USERNAME_FLOWZ/vshopdata_frontend_flowz:latest;
-            docker push $DOCKER_USERNAME_FLOWZ/vshopdata_frontend_flowz:latest;
-        elif [ ${TRAVIS_BRANCH} = "develop" ]; then
-            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-            docker build -t vshopdata_frontend_flowz:dev --build-arg domainkey="$DOMAINKEY_DEVELOP" --build-arg vId="$vId" ./client/;
-            docker images;
-            docker tag vshopdata_frontend_flowz:dev $DOCKER_USERNAME/vshopdata_frontend_flowz:dev;
-            docker push $DOCKER_USERNAME/vshopdata_frontend_flowz:dev;
-        elif [ ${TRAVIS_BRANCH} = "staging" ]; then
-            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-            docker build -t vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER --build-arg domainkey="$DOMAINKEY_STAGING" --build-arg vId="$vId" ./client/;
-            docker tag vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
-            docker tag vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/vshopdata_frontend_flowz:staging;
-            docker images;
-            docker push $DOCKER_USERNAME/vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
-            docker push $DOCKER_USERNAME/vshopdata_frontend_flowz:staging;
-        else
-            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-            docker build -t vshopdata_frontend_flowz:qa --build-arg domainkey="$DOMAINKEY_QA" --build-arg vId="$vId" ./client/;
-            docker images;
-            docker tag vshopdata_frontend_flowz:qa $DOCKER_USERNAME/vshopdata_frontend_flowz:qa;
-            docker push $DOCKER_USERNAME/vshopdata_frontend_flowz:qa;
-        fi'
+#    - stage: Vshopdata-Frontend-Flowz
+#      script:
+#      - 'if [ ${TRAVIS_BRANCH} = "master" ]; then
+#            docker login -u="$DOCKER_USERNAME_FLOWZ" -p="$DOCKER_PASSWORD_FLOWZ";
+#            docker build -t vshopdata_frontend_flowz:latest --build-arg domainkey="$DOMAINKEY_MASTER" --build-arg vId="$vId" ./client/;
+#            docker images;
+#            docker tag vshopdata_frontend_flowz:latest $DOCKER_USERNAME_FLOWZ/vshopdata_frontend_flowz:latest;
+#            docker push $DOCKER_USERNAME_FLOWZ/vshopdata_frontend_flowz:latest;
+#        elif [ ${TRAVIS_BRANCH} = "develop" ]; then
+#            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+#            docker build -t vshopdata_frontend_flowz:dev --build-arg domainkey="$DOMAINKEY_DEVELOP" --build-arg vId="$vId" ./client/;
+#            docker images;
+#            docker tag vshopdata_frontend_flowz:dev $DOCKER_USERNAME/vshopdata_frontend_flowz:dev;
+#            docker push $DOCKER_USERNAME/vshopdata_frontend_flowz:dev;
+#        elif [ ${TRAVIS_BRANCH} = "staging" ]; then
+#            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+#            docker build -t vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER --build-arg domainkey="$DOMAINKEY_STAGING" --build-arg vId="$vId" ./client/;
+#            docker tag vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+#            docker tag vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER $DOCKER_USERNAME/vshopdata_frontend_flowz:staging;
+#            docker images;
+#            docker push $DOCKER_USERNAME/vshopdata_frontend_flowz:$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER;
+#            docker push $DOCKER_USERNAME/vshopdata_frontend_flowz:staging;
+#        else
+#            docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+#            docker build -t vshopdata_frontend_flowz:qa --build-arg domainkey="$DOMAINKEY_QA" --build-arg vId="$vId" ./client/;
+#            docker images;
+#            docker tag vshopdata_frontend_flowz:qa $DOCKER_USERNAME/vshopdata_frontend_flowz:qa;
+#            docker push $DOCKER_USERNAME/vshopdata_frontend_flowz:qa;
+#        fi'
     - stage: Vshopdata-Worker
       script:
       - 'if [ ${TRAVIS_BRANCH} = "master" ]; then
